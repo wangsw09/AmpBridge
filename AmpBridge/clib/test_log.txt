@@ -1,0 +1,70 @@
+
+
+##################################
+Mon Mar 13 13:29:46 DST 2017
+##################################
+------------------------------
+Testing Library <eqSolver.so>
+------------------------------
+Part 1: bisection Search Methods
+---------------
+f(x) = (x - 5.4) ** 5; Root: 5.4
+---------------
+Test _bisectSearch_findUpper1_(f, -3.1, 1.2): Return (5.300000, 14.900000)
+---------------
+Test _bisectSearch_findLower1_(f, 10.9, 1.2): Return (2.500000, 7.300000)
+---------------
+Test _bisectSearch_findUpper2_(f, -2.9, 8): Return (5.275000, 6.637500)
+---------------
+Test _bisectSearch_findLower2_(f, 9.8, 0): Return (4.900000, 9.800000)
+---------------
+Test bisectSearch(f, 0.3, 7.8, 1e-8): Return 5.400000
+---------------
+Test sign(-5.3): Return -1
+------------------------------
+------------------------------
+Part 2: proximal functions
+---------------
+Test cprox_Lq(10, 4.5, 1.50, 1e-8): Return 1.562500
+timing cproxf.cprox_Lq(-10, 4.5, 1.0001, 1e-8)
+output: -5.498783
+time cost: 0.000002s
+---------------
+------------------------------
+
+
+##################################
+Mon Mar 13 13:44:09 DST 2017
+##################################
+------------------------------
+Testing Library <eqSolver.so>
+------------------------------
+Part 1: bisection Search Methods
+---------------
+f(x) = (x - 5.4) ** 5; Root: 5.4
+---------------
+Test _bisectSearch_findUpper1_(f, -3.1, 1.2): Return (5.300000, 14.900000)
+---------------
+Test _bisectSearch_findLower1_(f, 10.9, 1.2): Return (2.500000, 7.300000)
+---------------
+Test _bisectSearch_findUpper2_(f, -2.9, 8): Return (5.275000, 6.637500)
+---------------
+Test _bisectSearch_findLower2_(f, 9.8, 0): Return (4.900000, 9.800000)
+---------------
+Test bisectSearch(f, 0.3, 7.8, 1e-8): Return 5.400000
+---------------
+Test sign(-5.3): Return -1
+------------------------------
+------------------------------
+Part 2: proximal functions
+---------------
+Test cprox_Lq(10, 4.5, 1.50, 1e-8): Return 1.562500
+timing cproxf.cprox_Lq(1, 4.5, 1.5, 1e-8)
+output: 0.021034
+time cost: 0.000003s
+---------------
+------------------------------
+* eta() function written in numpy is O(1e-4)
+
+
+
