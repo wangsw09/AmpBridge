@@ -3,64 +3,6 @@ import os.path
 import ctypes
 
 import numpy as np
-'''
-if 'win' in sys.platform.lower():
-    dir_eqSolver = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'clib/eqSolver.dll')
-else:
-    dir_eqSolver = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'clib/eqSolver.so')
-
-eqSolver = ctypes.cdll.LoadLibrary(dir_eqSolver)
-
-eqSolver.bisectSearch.restype = ctypes.c_double
-CNUMFUNC = ctypes.CFUNCTYPE(ctypes.c_double, ctypes.c_double)
-eqSolver.bisectSearch.argtypes = [CNUMFUNC, ctypes.c_double, ctypes.c_double, ctypes.c_double]
-
-class CBOUND(ctypes.Structure):
-    _fields_ = [('lower', ctypes.c_double), ('upper', ctypes.c_double)]
-
-## type 1, lower/upper + incre/decre_unit
-eqSolver._bisectSearch_findUpper1_.restype = CBOUND
-eqSolver._bisectSearch_findUpper1_.argtypes = [CNUMFUNC, ctypes.c_double, ctypes.c_double]
-
-eqSolver._bisectSearch_findLower1_.restype = CBOUND
-eqSolver._bisectSearch_findLower1_.argtypes = [CNUMFUNC, ctypes.c_double, ctypes.c_double]
-
-## type 2, lower/upper + stop
-eqSolver._bisectSearch_findUpper2_.restype = CBOUND
-eqSolver._bisectSearch_findUpper2_.argtypes = [CNUMFUNC, ctypes.c_double, ctypes.c_double]
-
-eqSolver._bisectSearch_findLower2_.restype = CBOUND
-eqSolver._bisectSearch_findLower2_.argtypes = [CNUMFUNC, ctypes.c_double, ctypes.c_double]
-'''
-
-def cbisect_search(fun, lower=None, upper=None, bound = None, unit = None, accuracy = 1e-7, non_negative=True, **kwargs): # remove 'cut = 0' argument
-    '''
-    fun(lower) and fun(upper) must have different signs
-    '''
-
-    cf = CNUMFUNC(lambda x: fun(x, **kwargs))
-
-    if (lower != None) and (upper != None):
-        return eqSolver.bisectSearch(cf, lower, upper, accuracy)
-
-    elif lower != None:
-        if bound != None:
-            search_range = eqSolver._bisectSearch_findUpper2_(cf, lower, bound)
-            return eqSolver.bisectSearch(cf, search_range.lower, search_range.upper, accuracy)
-        elif unit != None:
-            search_range = eqSolver._bisectSearch_findUpper1_(cf, lower, unit)
-            return eqSolver.bisectSearch(cf, search_range.lower, search_range.upper, accuracy)
-
-    elif upper != None:
-        if bound != None:
-            search_range = eqSolver._bisectSearch_findLower2_(cf, upper, bound)
-            return eqSolver.bisectSearch(cf, search_range.lower, search_range.upper, accuracy)
-        elif unit != None:
-            search_range = eqSolver._bisectSearch_findLower1_(cf, lower, unit)
-            return eqSolver.bisectSearch(cf, search_range.lower, search_range.upper, accuracy)
-
-    else:
-        raise ValueError('incorrect parameter combination;')
 
 
 def bisect_search(fun, lower=None, upper=None, bound = None, unit = None, accuracy = 1e-10, non_negative=True, **kwargs): # remove 'cut = 0' argument
