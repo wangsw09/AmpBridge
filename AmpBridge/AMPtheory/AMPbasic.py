@@ -18,11 +18,6 @@ class amp_theory:
         self.sigma   = sigma
         self.nonzero_dist    = nonzero_dist
         self.dist = ddist(support = nonzero_dist.supp() + [0], prob = [p * eps for p in nonzero_dist.prob()] + [1 - eps])
-        
-        self.alpha_rough_lb    = {}  # private
-        self.alpha_accurate_lb = {}  # private
-        self.alpha_opt = {}  # private, the name is inconsistent with that from <linear_model>!, this should be fixed.
-        self.optimal_tau = {}  # private
 
     def mse_func(self, x, alpha, tau, q):
         '''
@@ -88,22 +83,15 @@ class amp_theory:
         return bisect_search(temp_func, lower=self.sigma, unit=self.sigma, accuracy = tol)
 
     def alpha_optimal(self, q):
-        if q in self.alpha_opt:
-            return self.alpha_opt[q]
-        else:
-            temp_func = lambda alpha: self.mse_derivative(alpha, self.tau_of_alpha(alpha, q), q)
-            opt_val = bisect_search(temp_func, lower = self.alpha_lower_bound('rough', q) + 0.01, unit = self.sigma)  # the lower bound and upper bound here need to be modified
-            self.alpha_opt[q] = opt_val
-            self.optimal_tau[q] = self.tau_of_alpha(opt_val, q)
-            return opt_val
+        temp_func = lambda alpha: self.mse_derivative(alpha, self.tau_of_alpha(alpha, q), q)
+        opt_val = bisect_search(temp_func, lower = self.alpha_lower_bound('rough', q) + 0.01, unit = self.sigma)  # the lower bound and upper bound here need to be modified
+        return opt_val
 
     def alpha_lower_bound(self, category, q):
         '''
         find two kinds of lower bound for alpha        
         '''
         if category == 'rough': # result correct
-            if q in self.alpha_rough_lb:
-                return self.alpha_rough_lb[q]
             if self.delta >= 1:
                 ans = 0
             else:
@@ -116,16 +104,12 @@ class amp_theory:
                     temp_func1 = lambda a: lambda z: eta(z, a, q) ** 2 * sps.norm.pdf(z)
                     temp_func2 = lambda a: spi.quad(temp_func1(a), -np.inf, np.inf)[0] - self.delta
                     ans = bisect_search(temp_func2, lower = 0, unit = 0.5)
-            self.alpha_rough_lb[q] = ans
             return ans
         
         elif category == 'accurate':
-            if q in self.alpha_accurate_lb:
-                return self.alpha_accurate_lb[q]
             if q == 2:
                 return np.maximum(0.5 / self.delta - 0.5, 0.0)
             ans = self.alpha_of_lambda(0, q)
-            self.alpha_accurate_lb[q] = ans
             return ans
 
     def lambda_of_alpha(self, alpha, q):
