@@ -41,8 +41,7 @@ q = 1.2
 lam = 4.0
 
 beta_hat = lm.bridge(lam, q)
-# this mse is not the true mse, it is equivalent to tau ** 2
-beta_hat_mse = lm.bridge_mse(lam, q)
+mse_hat = np.sum((beta_hat - beta_true) ** 2.0) / p
 ```
 
 
