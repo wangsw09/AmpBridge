@@ -6,6 +6,7 @@ import scipy.integrate as spi
 
 from ..lib.prox_func import *
 from ..lib.tools import *
+from ..cplib import *
 
 
 class amp_theory:
@@ -33,11 +34,13 @@ class amp_theory:
             tau ** 2 = sigma ** 2 + Expectation(mse_func(x, alpha, tau)) / delta
         '''
         if q == 1:
-            return ( tau ** 2 * (1.0 + alpha ** 2) - x ** 2 ) * (sps.norm.cdf(x / tau - alpha) + sps.norm.cdf( - x / tau - alpha)) - (tau * x + tau ** 2 * alpha) * sps.norm.pdf(alpha - x / tau) + (tau * x - tau ** 2 * alpha) * sps.norm.pdf(alpha + x / tau) + x ** 2
+            return ( tau ** 2 * (1.0 + alpha ** 2) - x ** 2 ) * (ncdf(x / tau - alpha) + ncdf( - x / tau - alpha)) - (tau * x + tau ** 2 * alpha) * npdf(alpha - x / tau) + (tau * x - tau ** 2 * alpha) * npdf(alpha + x / tau) + x ** 2
+            # return ( tau ** 2 * (1.0 + alpha ** 2) - x ** 2 ) * (sps.norm.cdf(x / tau - alpha) + sps.norm.cdf( - x / tau - alpha)) - (tau * x + tau ** 2 * alpha) * sps.norm.pdf(alpha - x / tau) + (tau * x - tau ** 2 * alpha) * sps.norm.pdf(alpha + x / tau) + x ** 2
         elif q == 2:
             return (tau ** 2.0 + 4 * alpha ** 2.0 * x ** 2.0) / (1.0 + 2.0 * alpha) ** 2
         else:
-            temp_func = lambda z: (eta(x + tau * z, t = alpha * tau ** (2.0 - q), q = q) - x) ** 2 * sps.norm.pdf(z)
+            # temp_func = lambda z: (eta(x + tau * z, t = alpha * tau ** (2.0 - q), q = q) - x) ** 2 * sps.norm.pdf(z)
+            temp_func = lambda z: (eta(x + tau * z, t = alpha * tau ** (2.0 - q), q = q) - x) ** 2 * npdf(z)
             return spi.quad(temp_func, - 5, 5)[0]  # the integral limit may need adjustment for accuracy
 
     def mse(self, alpha, tau, q):
@@ -59,11 +62,13 @@ class amp_theory:
         Compute the derivative of mse_func(x, alpha, tau) w.r.t. alpha
         '''
         if q == 1:
-            return 2.0 * tau ** 2 * alpha * (sps.norm.cdf(x / tau - alpha) + sps.norm.cdf( - x / tau - alpha)) - 2.0 * tau ** 2 * (sps.norm.pdf(alpha - x / tau) + sps.norm.pdf(alpha + x / tau) )
+            return 2.0 * tau ** 2 * alpha * (ncdf(x / tau - alpha) + ncdf( - x / tau - alpha)) - 2.0 * tau ** 2 * (npdf(alpha - x / tau) + npdf(alpha + x / tau) )
+            # return 2.0 * tau ** 2 * alpha * (sps.norm.cdf(x / tau - alpha) + sps.norm.cdf( - x / tau - alpha)) - 2.0 * tau ** 2 * (sps.norm.pdf(alpha - x / tau) + sps.norm.pdf(alpha + x / tau) )
         elif q == 2:
             return (alpha * x ** 2.0 - 0.5 * tau ** 2) / (alpha + 0.5) ** 3
         else:
-            temp_func = lambda z: 2.0 * tau * (eta(x + z * tau, alpha * tau ** (2.0 - q), q) - x) * eta_partial_t(x / tau + z, alpha, q) * sps.norm.pdf(z)
+            temp_func = lambda z: 2.0 * tau * (eta(x + z * tau, alpha * tau ** (2.0 - q), q) - x) * eta_partial_t(x / tau + z, alpha, q) * npdf(z)
+            # temp_func = lambda z: 2.0 * tau * (eta(x + z * tau, alpha * tau ** (2.0 - q), q) - x) * eta_partial_t(x / tau + z, alpha, q) * sps.norm.pdf(z)
             return spi.quad(temp_func, - 5, 5)[0]  # the integral limit may need adjustment for accuracy
 
     def mse_derivative(self, alpha, tau, q):
@@ -96,12 +101,14 @@ class amp_theory:
                 ans = 0
             else:
                 if q == 1:
-                    temp_func = lambda x: (1 + x ** 2) * sps.norm.cdf( - x) - x * sps.norm.pdf(x) - self.delta / 2.0
+                    temp_func = lambda x: (1 + x ** 2) * ncdf( - x) - x * npdf(x) - self.delta / 2.0
+                    # temp_func = lambda x: (1 + x ** 2) * sps.norm.cdf( - x) - x * sps.norm.pdf(x) - self.delta / 2.0
                     ans = bisect_search(temp_func, lower = 0, upper = 6)  # the 6 here is definitely fine
                 elif q == 2:
                     return 0.5 / np.sqrt(self.delta) - 0.5
                 else:
-                    temp_func1 = lambda a: lambda z: eta(z, a, q) ** 2 * sps.norm.pdf(z)
+                    temp_func1 = lambda a: lambda z: eta(z, a, q) ** 2 * npdf(z)
+                    # temp_func1 = lambda a: lambda z: eta(z, a, q) ** 2 * sps.norm.pdf(z)
                     temp_func2 = lambda a: spi.quad(temp_func1(a), -np.inf, np.inf)[0] - self.delta
                     ans = bisect_search(temp_func2, lower = 0, unit = 0.5)
             return ans
@@ -118,12 +125,14 @@ class amp_theory:
         '''
         tau = self.tau_of_alpha(alpha, q)
         if q == 1:
-            temp_func = lambda x: sps.norm.cdf(x / tau - alpha) + sps.norm.cdf( - x / tau - alpha)
+            temp_func = lambda x: ncdf(x / tau - alpha) + ncdf( - x / tau - alpha)
+            # temp_func = lambda x: sps.norm.cdf(x / tau - alpha) + sps.norm.cdf( - x / tau - alpha)
             return alpha * tau * (1.0 - self.dist.expectation(temp_func) / self.delta)
         elif q == 2:
             return alpha * (1.0 - 1.0 / self.delta / (1.0 + 2.0 * alpha))
         else:
-            temp_func1 = lambda x: lambda z: eta_derivative(x + tau * z, alpha * tau ** (2 - q), q) * sps.norm.pdf(z)
+            temp_func1 = lambda x: lambda z: eta_derivative(x + tau * z, alpha * tau ** (2 - q), q) * npdf(z)
+            # temp_func1 = lambda x: lambda z: eta_derivative(x + tau * z, alpha * tau ** (2 - q), q) * sps.norm.pdf(z)
             temp_func2 = lambda x: spi.quad(temp_func1(x), -np.inf, np.inf)[0]
             return alpha * tau ** (2 - q) * (1 - self.dist.expectation(temp_func2) / self.delta)
     
