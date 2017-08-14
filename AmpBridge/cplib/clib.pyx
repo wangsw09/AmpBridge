@@ -145,3 +145,57 @@ def mse_integrand(double z, double x, double alpha, double tau, double q):
 def mse_drvt_integrand(double z, double x, double alpha, double tau, double q):
     return 2.0 * tau * (prox_Lq(x + z * tau, alpha * tau ** (2.0 - q), q) - x) * prox_Lq_drvt_t(x / tau + z, alpha, q) * npdf(z)
 
+
+def prox_Lq_vec(double u, double t, double q, double tol = 1e-9):
+    '''
+    proximal function of lq penalty tuned at t
+    the tol will cause problem for u ~ 5e5, e.g., -564789.688027
+    '''
+    cdef int sign = 1
+    if u < 0:
+        sign = -1
+
+    cdef double a
+    cdef double b
+    cdef double x0
+    cdef double x
+    cdef double u0
+
+    if q == 1.0:
+        return max(abs(u) - t, 0.0) * sign
+    elif q == 2.0:
+        return u / (1.0 + 2.0 * t)
+    elif q == 1.5:
+        x0 = (0.5625 * t * t + abs(u)) ** 0.5 - 0.75 * t
+        return x0 * x0 * sign
+    elif q > 2.0:
+        a = t * q * (q - 2.0)
+        b = t * q * (q - 1.0)
+        x0 = 0
+        u0 = abs(u)
+        x = u0
+
+        while abs(x - x0) > tol:
+            x0 = x
+            x = (a * x ** (q - 1.0) + u0) / (1.0 + b * x ** (q - 2.0))
+        return x * sign
+
+    else:
+        a = t * q * (q - 2.0)
+        b = t * q * (q - 1.0)
+        u0 = abs(u)
+
+        if u0 <= tol:
+            return u
+        else:
+            x0 = u0
+            x = (a * u0 ** (q - 1.0) + u0) / (1.0 + b * u0 ** (q - 2.0))
+            if x <= 0:
+                x = min( (u0 / (1.0 + t * q)) ** (1.0 / (q - 1.0)), u0 / (1.0 + t * q) )
+            
+            while abs(x - x0) > tol:
+                x0 = x
+                x = (a * x + u0 * x ** (2.0 - q)) / (x ** (2.0 - q) + b)
+            return x * sign
+
+

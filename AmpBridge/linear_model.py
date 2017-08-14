@@ -237,9 +237,6 @@ class linear_model:
         currently deal with any q >= 1
         I really think I should lower the precision to maybe 1e-3
         '''
-       
-        #if (q, lam) in self.bridge_result and store == True:
-        #    return self.bridge_result[(q, lam)]
 
         n, p  = self.shape
 
@@ -283,58 +280,7 @@ class linear_model:
             np.copyto(self.beta_prev, beta)
 
         return beta
-        
-    def xbridge(self, lam, q, tol=1e-6, iter_max = 1000, initial = None, store=True, report_loop=False):
-        '''
-        run bridge regression by coordinate descent.
-        currently deal with any q >= 1
-        I really think I should lower the precision to maybe 1e-3
-        '''
-        n, p  = self.shape
-        
-        if (q, lam) in self.bridge_result and store == True:
-            return self.bridge_result[(q, lam)]
-        iter_count = 1
-
-        if initial is None:
-            beta0 = np.zeros(p)  # initialization
-        else:
-            beta0 = np.copy(initial)
-
-        beta  = np.ones(p)  # randomly picked
-        
-        z = self.y - np.dot(self.X, beta0) + self.X[:, 0] * beta0[0]
-        R = np.dot(self.X[:, 0], z)
-        beta[0] = eta(R / self.X_norm2[0], lam / self.X_norm2[0], q)
-        
-        for i in xrange(1, p):
-            z = z - self.X[:, i - 1] * beta[i - 1] + self.X[:, i] * beta0[i]
-            R = np.dot(self.X[:, i], z)
-            beta[i] = eta(R / self.X_norm2[i], lam / self.X_norm2[i], q)
-        
-        # print('loop:', sep='', end='', file=sys.stderr)
-        while npla.norm(beta - beta0) / npla.norm(beta) > tol:
-            iter_count += 1
-            beta0 = np.copy(beta)
-            
-            z = z - self.X[:, p - 1] * beta[p - 1] + self.X[:, 0] * beta0[0]
-            R = np.dot(self.X[:, 0], z)
-            beta[0] = eta(R / self.X_norm2[0], lam / self.X_norm2[0], q)
-            
-            for i in xrange(1, p):
-                z = z - self.X[:, i - 1] * beta[i - 1] + self.X[:, i] * beta0[i]
-                R = np.dot(self.X[:, i], z)
-                beta[i] = eta(R / self.X_norm2[i], lam / self.X_norm2[i], q)
-            
-            if iter_count % 5 ==0 and report_loop:
-                print(' -- ', iter_count, sep='', end='', file=sys.stderr)
-            if iter_count > iter_max:
-                print('iter_max break', file=sys.stderr)
-                break
-        # print('\n', 'iteration count:', iter_count, sep='', file=sys.stderr)
-        self.bridge_result[(q, lam)] = beta ## here should have remove z
-        return beta
-    
+   
     def bridge_mse(self, lam, q, initial = None):
         '''
         estimate MSE of bridge estimator by debiasing.
