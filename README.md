@@ -1,6 +1,51 @@
 ## Package AmpBridge
 
 This is a package from my research with Haolei Weng and Professor Arian Maleki.
+
+
+Some examples of usage.
+
+1. Calculate the theoretical mse-related quantity
+
+```python
+import AmpBridge as ab
+
+eps = 0.3
+delta = 0.7
+sigma = 0.5
+nonzero_dist = ab.ddist([1], [1])
+
+ath = ab.amp_theory(eps=eps, delta=delta, sigma=sigma, nonzero_dist=nonzero_dist)
+
+# optimal tuning
+q = 1.2
+alpha = ath.alpha_optimal(q)
+tau = ath.tau_of_alpha(alpha, q)
+mse = ath.mse(alpha, tau, q)
+```
+
+2. Calculate bridge regression and sample "MSE"
+```python
+import AmpBridge as ab
+
+p = 8000
+delta = 0.7
+eps = 0.3
+sigma = 0.5
+signl = ab.ddist([1], [1])
+
+y, X, beta_true = ab.data_gen.linmod(p, delta, eps, sigma, signl)
+
+lm = ab.linear_model(y, X)
+q = 1.2
+lam = 4.0
+
+beta_hat = lm.bridge(lam, q)
+# this mse is not the true mse, it is equivalent to tau ** 2
+beta_hat_mse = lm.bridge_mse(lam, q)
+```
+
+
 It implementes the following content
 
 * proximal operator
@@ -30,51 +75,5 @@ Future work:
 * Other linear regression methods developed in recent years, including SCAD, adaptive Lasso, etc.
 
 
-
-
-################################################
-##     (Expected) Structure of this module
-################################################
-
-MordernLM
-    |
-    |----- lib
-    |          -- 
-    |          -- prox_func.py
-    |          -- eqsolver.py
-    |
-    |----- data_gen
-    |          -- gen_lm.py
-    |      
-    |----- linear_model.py
-    |          -- AMP
-    |          -- Bridge Reg
-    |          -- SLOPE
-    |        
-    |----- * AMP_func.py
-    |          
-    |----- AMPtheory
-    |          -- AMPbasic.py
-    |              --- state_evol
-    |              --- calib
-    |              --- optm_alpha
-    |              --- optm_tau
-    |              --- optm_lambda
-    |          -- mseAnalysis.py
-    |              --- large_noise
-    |              --- low_epsilon
-    |              --- low_noise
-    |              --- large_delta
-    |----- clib:
-    |           -- cprox.py
-    |           -- ceqsolver.py
-    |
-    |
-    |----- test
-    |
-    |
-    |
-    |
-    |
 
 
