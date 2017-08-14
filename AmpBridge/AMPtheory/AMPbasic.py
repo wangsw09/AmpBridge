@@ -39,8 +39,9 @@ class amp_theory:
         elif q == 2:
             return (tau ** 2.0 + 4 * alpha ** 2.0 * x ** 2.0) / (1.0 + 2.0 * alpha) ** 2
         else:
+            temp_func = lambda z: (prox_Lq(x + tau * z, t = alpha * tau ** (2.0 - q), q = q) - x) ** 2 * npdf(z)
+            # temp_func = lambda z: (eta(x + tau * z, t = alpha * tau ** (2.0 - q), q = q) - x) ** 2 * npdf(z)
             # temp_func = lambda z: (eta(x + tau * z, t = alpha * tau ** (2.0 - q), q = q) - x) ** 2 * sps.norm.pdf(z)
-            temp_func = lambda z: (eta(x + tau * z, t = alpha * tau ** (2.0 - q), q = q) - x) ** 2 * npdf(z)
             return spi.quad(temp_func, - 5, 5)[0]  # the integral limit may need adjustment for accuracy
 
     def mse(self, alpha, tau, q):
@@ -67,7 +68,8 @@ class amp_theory:
         elif q == 2:
             return (alpha * x ** 2.0 - 0.5 * tau ** 2) / (alpha + 0.5) ** 3
         else:
-            temp_func = lambda z: 2.0 * tau * (eta(x + z * tau, alpha * tau ** (2.0 - q), q) - x) * eta_partial_t(x / tau + z, alpha, q) * npdf(z)
+            temp_func = lambda z: 2.0 * tau * (prox_Lq(x + z * tau, alpha * tau ** (2.0 - q), q) - x) * prox_Lq_drvt_t(x / tau + z, alpha, q) * npdf(z)
+            # temp_func = lambda z: 2.0 * tau * (eta(x + z * tau, alpha * tau ** (2.0 - q), q) - x) * eta_partial_t(x / tau + z, alpha, q) * npdf(z)
             # temp_func = lambda z: 2.0 * tau * (eta(x + z * tau, alpha * tau ** (2.0 - q), q) - x) * eta_partial_t(x / tau + z, alpha, q) * sps.norm.pdf(z)
             return spi.quad(temp_func, - 5, 5)[0]  # the integral limit may need adjustment for accuracy
 

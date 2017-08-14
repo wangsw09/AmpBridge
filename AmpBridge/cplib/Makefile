@@ -1,7 +1,7 @@
 .PHONY: clean
 
 clean:
-	rm -rf *.c build *.so __init__.py
+	rm -rf *.c build *.so __init__.py *~ .*~ __init__.pyc
 
 compile:
 	python setup.py build_ext --inplace

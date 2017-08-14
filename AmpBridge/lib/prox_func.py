@@ -3,6 +3,7 @@ import numpy as np
 import ctypes
 from .tools import *
 from .base_class import *
+from ..cplib import *
 
 
 # if 'win' in sys.platform.lower():
@@ -65,9 +66,8 @@ def eta(u, t, q = 1, tol = 1e-9):
             return x * np.sign(u)
 
 
-
-
-eta = np.vectorize(eta)  # vectorized so u can be an array # problem: shown as Data in the introduction
+eta = np.vectorize(prox_Lq)  # vectorized so u can be an array # problem: shown as Data in the introduction
+# eta = np.vectorize(eta)  # vectorized so u can be an array # problem: shown as Data in the introduction
  
 def xeta(u, t, q = 1, tol = 1e-9):
     '''
