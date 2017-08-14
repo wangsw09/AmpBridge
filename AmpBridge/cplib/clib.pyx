@@ -138,3 +138,10 @@ def prox_Lq_inv(double v, double t, double q):
     return v + q * t * abs(v) ** (q - 1.0) * sign
 
 
+def mse_integrand(double z, double x, double alpha, double tau, double q):
+    return (prox_Lq(x + tau * z, t = alpha * tau ** (2.0 - q), q = q) - x) ** 2 * npdf(z)
+
+
+def mse_drvt_integrand(double z, double x, double alpha, double tau, double q):
+    return 2.0 * tau * (prox_Lq(x + z * tau, alpha * tau ** (2.0 - q), q) - x) * prox_Lq_drvt_t(x / tau + z, alpha, q) * npdf(z)
+
