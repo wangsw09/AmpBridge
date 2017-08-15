@@ -1,10 +1,10 @@
 ## Package AmpBridge
 
 1. This package provides algorithms for the following topics:
-  * AMP (approximated message passing) with Lq proximal operator
-  * Linear regression with Lq penalty, for any q >= 1
-  * Related functions to the above two topics (such as tuning)
-  * Numerical calculation about several quantities on penalized linear regression, such as MSE, optimal tuned MSE, optimal tuning parameter, etc.
+   * AMP (approximated message passing) with Lq proximal operator
+   * Linear regression with Lq penalty, for any q >= 1
+   * Related functions to the above two topics (such as tuning)
+   * Numerical calculation about several quantities on penalized linear regression, such as MSE, optimal tuned MSE, optimal tuning parameter, etc.
 
 2. By using Cython to accelerate critical components, the package provides a fast solutions to the above topics.
 3. This work originates from my research with Haolei Weng and Professor Arian Maleki at Columbia University.
