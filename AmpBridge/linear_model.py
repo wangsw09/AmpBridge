@@ -8,6 +8,7 @@ import sklearn.linear_model as skll
 
 from .lib.prox_func import *
 from .lib.tools import *
+from .cplib import *
 
 
 # define a class: linear model
@@ -280,7 +281,89 @@ class linear_model:
             np.copyto(self.beta_prev, beta)
 
         return beta
-   
+
+    def bridge1(self, lam, q, tol=1e-6, iter_max = 1000, initial = None, store=True):
+        '''
+        run bridge regression by coordinate descent.
+        currently deal with any q >= 1
+        I really think I should lower the precision to maybe 1e-3
+        '''
+
+        n, p  = self.shape
+
+        iter_count = 0
+
+        if initial is None:
+            beta0 = np.zeros(p) - 1.0  # initialization
+            beta  = np.zeros(p)  # picked to pass 1st loop
+            grad = np.copy(self.Xy)
+        else:
+            beta0 = np.copy(initial) - 1.0
+            beta  = np.copy(initial)
+            grad  = np.copy(self.Xy) - np.dot(self.XX.T, beta) + beta
+
+        beta_max = 1.0
+
+        while npla.norm(beta - beta0, np.inf) / beta_max > tol:
+            # this is not a good rule when < beta = 0 >
+            np.copyto(beta0, beta)
+
+            # update beta
+            for i in xrange(p):
+
+                # update beta[i]
+                beta[i] = prox_Lq(grad[i], lam / self.X_norm2[i], q)
+
+                # update grad after beta[i]
+                grad -= self.XX[i, :] * (beta[i] - beta0[i])
+                grad[i] += beta[i] - beta0[i]
+
+            beta_max = npla.norm(beta, np.inf)
+
+            iter_count += 1
+            if iter_count > iter_max:
+                print('warning: iter_max break', file=sys.stderr)
+                break
+
+        if self.beta_prev is None:
+            self.beta_prev = np.copy(beta)
+        else:
+            np.copyto(self.beta_prev, beta)
+
+        return beta
+    
+    def cbridge(self, lam, q, tol=1e-6, iter_max = 1000, initial = None, store=True):
+        '''
+        run bridge regression by coordinate descent.
+        currently deal with any q >= 1
+        I really think I should lower the precision to maybe 1e-3
+        '''
+
+        n, p  = self.shape
+
+        if initial:
+            beta_init = initial
+        else:
+            beta_init = np.zeros(p, dtype=np.float64)
+        
+        return ccbridge(self.XX, self.Xy, self.X_norm2, lam, q, beta_init, rel_tol=1e-6)
+
+    def ccbridge(self, lam, q, tol=1e-6, iter_max = 1000, initial = None, store=True):
+        '''
+        run bridge regression by coordinate descent.
+        currently deal with any q >= 1
+        I really think I should lower the precision to maybe 1e-3
+        '''
+
+        n, p  = self.shape
+
+        if initial:
+            beta_init = initial
+        else:
+            beta_init = np.zeros(p, dtype=np.float64)
+        
+        return cccbridge(self.XX, self.Xy, self.X_norm2, lam, q, beta_init, rel_tol=1e-6)
+ 
     def bridge_mse(self, lam, q, initial = None):
         '''
         estimate MSE of bridge estimator by debiasing.

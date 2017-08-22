@@ -1,3 +1,8 @@
+import numpy as np
+cimport numpy as np
+cimport cython
+
+
 def ncdf(double x):
     cdef double a1 = 0.254829592
     cdef double a2 = -0.284496736
@@ -74,6 +79,59 @@ def prox_Lq(double u, double t, double q, double tol = 1e-9):
                 x0 = x
                 x = (a * x + u0 * x ** (2.0 - q)) / (x ** (2.0 - q) + b)
             return x * sign
+
+cdef double cprox_Lq(double u, double t, double q, double tol = 1e-9):
+    '''
+    proximal function of lq penalty tuned at t
+    the tol will cause problem for u ~ 5e5, e.g., -564789.688027
+    '''
+    cdef double sign = 1.0
+    if u < 0:
+        sign = -1.0
+
+    cdef double a
+    cdef double b
+    cdef double x0
+    cdef double x
+    cdef double u0
+
+    if q == 1.0:
+        return max(abs(u) - t, 0.0) * sign
+    elif q == 2.0:
+        return u / (1.0 + 2.0 * t)
+    elif q == 1.5:
+        x0 = (0.5625 * t * t + abs(u)) ** 0.5 - 0.75 * t
+        return x0 * x0 * sign
+    elif q > 2.0:
+        a = t * q * (q - 2.0)
+        b = t * q * (q - 1.0)
+        x0 = 0
+        u0 = abs(u)
+        x = u0
+
+        while abs(x - x0) > tol:
+            x0 = x
+            x = (a * x ** (q - 1.0) + u0) / (1.0 + b * x ** (q - 2.0))
+        return x * sign
+
+    else:
+        a = t * q * (q - 2.0)
+        b = t * q * (q - 1.0)
+        u0 = abs(u)
+
+        if u0 <= tol:
+            return u
+        else:
+            x0 = u0
+            x = (a * u0 ** (q - 1.0) + u0) / (1.0 + b * u0 ** (q - 2.0))
+            if x <= 0:
+                x = min( (u0 / (1.0 + t * q)) ** (1.0 / (q - 1.0)), u0 / (1.0 + t * q) )
+            
+            while abs(x - x0) > tol:
+                x0 = x
+                x = (a * x + u0 * x ** (2.0 - q)) / (x ** (2.0 - q) + b)
+            return x * sign
+
 
 
 def prox_Lq_drvt(double u, double t, double q, double tol=1e-9):
@@ -199,3 +257,259 @@ def prox_Lq_vec(double u, double t, double q, double tol = 1e-9):
             return x * sign
 
 
+@cython.boundscheck(False)
+@cython.wraparound(False)
+def ccbridge(np.ndarray[dtype=np.float64_t, ndim=2] XX, np.ndarray[dtype=np.float64_t, ndim=1] Xy, np.ndarray[dtype=np.float64_t, ndim=1] X_norm2, double lam, double q, np.ndarray[dtype=np.float64_t, ndim=1] beta_init, double abs_tol=1e-3, double rel_tol=1e-3):
+    '''
+    This function does bridge regression with L_q penalty for q >= 1.
+
+    Parameters
+    ----------
+    X: np.ndarray, dtype=np.float64, ndim=2
+        The 2-dim numpy array of independent variables;
+    y: np.ndarray, dtype=np.float64, ndim=1
+        The 1-dim numpy array of response variables;
+    lam: double, lam >= 0
+        Tuning parameter. For lam=0, I think it is interesting to implement it. May need special processing.
+    q: double, q >= 0
+        Choice of penalty. L_q penalty corresponds to L_q norm.
+    beta_init: np.ndarray, dtype=np.float64, ndim=2
+        The initialization of the iteration of the algorithm.
+
+    Returns
+    -------
+    beta_hat: np.ndarray, dtype=np.float64, ndim=1
+        The bridge estimator of the problem.
+
+    Details
+    -------
+    For this problem, we solve the following problem:
+        min_{\beta} 0.5 * \|y - X \beta\|_2^2 + \lam \|\beta\|_q^q
+    The strong convexity of the loss function and the convextiry of the penalty term guarantees the existence and uniqueness of the global minimizer, and also the convergence of the coordinate descent algorithm. Yes, we use coordinate descent.
+    '''
+    cdef int p = XX.shape[0]
+    cdef int iter_count = 0
+    cdef int i
+    cdef int j
+    cdef double beta_max = 1.0
+    cdef double diff = 1.0
+    cdef double tmp
+    cdef double beta0_comp
+
+    cdef np.ndarray[dtype=np.float64_t, ndim=1] beta = np.empty(p, dtype=np.float64) # new step
+    cdef np.ndarray[dtype=np.float64_t, ndim=1] grad = Xy - np.dot(XX.T, beta_init) + beta_init # gradient
+    cdef np.ndarray[dtype=np.float64_t, ndim=1] lam_arr = np.empty(p, dtype=np.float64) # gradient
+    
+    cdef double[:] beta_init_view = beta_init
+    cdef double[:] beta_view = beta
+    cdef double[:] grad_view = grad
+    cdef double[:] lam_arr_view = lam_arr
+    cdef double[:, :] XX_view = XX
+
+    for i in range(p):
+        lam_arr_view[i] = lam / X_norm2[i]
+        beta_view[i] = beta_init_view[i]
+
+    while diff / beta_max > rel_tol:
+        beta_max = 0.0
+        diff = 0.0
+        for i in range(p):
+            beta0_comp = beta_view[i]
+            beta_view[i] = prox_Lq(grad_view[i], lam_arr_view[i], q)
+
+            # update grad after beta[i]
+            tmp = beta_view[i] - beta0_comp
+
+            for j in range(p):
+                grad_view[j] -= XX_view[i, j] * tmp
+            grad_view[i] += tmp
+
+            if abs(tmp) > diff:
+                diff = abs(tmp)
+
+            tmp = abs(beta_view[i])
+            if tmp > beta_max:
+                beta_max = tmp
+
+        iter_count += 1
+#        if iter_count > iter_max:
+#            print('warning: iter_max break', file=sys.stderr)
+#            break
+    return beta
+
+@cython.boundscheck(False)
+@cython.wraparound(False)
+def cccbridge(np.ndarray[dtype=np.float64_t, ndim=2] XX, np.ndarray[dtype=np.float64_t, ndim=1] Xy, np.ndarray[dtype=np.float64_t, ndim=1] X_norm2, double lam, double q, np.ndarray[dtype=np.float64_t, ndim=1] beta_init, double abs_tol=1e-3, double rel_tol=1e-3):
+    '''
+    This function does bridge regression with L_q penalty for q >= 1.
+
+    Parameters
+    ----------
+    X: np.ndarray, dtype=np.float64, ndim=2
+        The 2-dim numpy array of independent variables;
+    y: np.ndarray, dtype=np.float64, ndim=1
+        The 1-dim numpy array of response variables;
+    lam: double, lam >= 0
+        Tuning parameter. For lam=0, I think it is interesting to implement it. May need special processing.
+    q: double, q >= 0
+        Choice of penalty. L_q penalty corresponds to L_q norm.
+    beta_init: np.ndarray, dtype=np.float64, ndim=2
+        The initialization of the iteration of the algorithm.
+
+    Returns
+    -------
+    beta_hat: np.ndarray, dtype=np.float64, ndim=1
+        The bridge estimator of the problem.
+
+    Details
+    -------
+    For this problem, we solve the following problem:
+        min_{\beta} 0.5 * \|y - X \beta\|_2^2 + \lam \|\beta\|_q^q
+    The strong convexity of the loss function and the convextiry of the penalty term guarantees the existence and uniqueness of the global minimizer, and also the convergence of the coordinate descent algorithm. Yes, we use coordinate descent.
+    '''
+    cdef int p = XX.shape[0]
+    cdef int iter_count = 0
+    cdef int i
+    cdef int j
+    cdef double beta_max = 1.0
+    cdef double diff = 1.0
+    cdef double tmp
+    cdef double beta0_comp
+
+    cdef np.ndarray[dtype=np.float64_t, ndim=1] beta = np.empty(p, dtype=np.float64) # new step
+    cdef np.ndarray[dtype=np.float64_t, ndim=1] grad = Xy - np.dot(XX.T, beta_init) + beta_init # gradient
+    cdef np.ndarray[dtype=np.float64_t, ndim=1] lam_arr = np.empty(p, dtype=np.float64) # gradient
+    
+    cdef double[:] beta_init_view = beta_init
+    cdef double[:] beta_view = beta
+    cdef double[:] grad_view = grad
+    cdef double[:] lam_arr_view = lam_arr
+    cdef double[:, :] XX_view = XX
+
+    for i in range(p):
+        lam_arr_view[i] = lam / X_norm2[i]
+        beta_view[i] = beta_init_view[i]
+
+    while diff / beta_max > rel_tol:
+        beta_max = 0.0
+        diff = 0.0
+        for i in range(p):
+            beta0_comp = beta_view[i]
+            beta_view[i] = prox_Lq(grad_view[i], lam_arr_view[i], q)
+
+            # update grad after beta[i]
+            tmp = beta_view[i] - beta0_comp
+
+            for j in range(p):
+                grad_view[j] -= XX_view[i, j] * tmp
+            grad_view[i] += tmp
+
+            if abs(tmp) > diff:
+                diff = abs(tmp)
+
+            tmp = abs(beta_view[i])
+            if tmp > beta_max:
+                beta_max = tmp
+
+        iter_count += 1
+#        if iter_count > iter_max:
+#            print('warning: iter_max break', file=sys.stderr)
+#            break
+    return beta
+
+#@cython.boundscheck(False)
+#@cython.wraparound(False)
+#def ccbridge(np.ndarray[dtype=np.float64_t, ndim=2] XX, np.ndarray[dtype=np.float64_t, ndim=1] Xy, np.ndarray[dtype=np.float64_t, ndim=1] X_norm2, double lam, double q, np.ndarray[dtype=np.float64_t, ndim=1] beta_init, double abs_tol=1e-3, double rel_tol=1e-3):
+#    '''
+#    This function does bridge regression with L_q penalty for q >= 1.
+#
+#    Parameters
+#    ----------
+#    X: np.ndarray, dtype=np.float64, ndim=2
+#        The 2-dim numpy array of independent variables;
+#    y: np.ndarray, dtype=np.float64, ndim=1
+#        The 1-dim numpy array of response variables;
+#    lam: double, lam >= 0
+#        Tuning parameter. For lam=0, I think it is interesting to implement it. May need special processing.
+#    q: double, q >= 0
+#        Choice of penalty. L_q penalty corresponds to L_q norm.
+#    beta_init: np.ndarray, dtype=np.float64, ndim=2
+#        The initialization of the iteration of the algorithm.
+#
+#    Returns
+#    -------
+#    beta_hat: np.ndarray, dtype=np.float64, ndim=1
+#        The bridge estimator of the problem.
+#
+#    Details
+#    -------
+#    For this problem, we solve the following problem:
+#        min_{\beta} 0.5 * \|y - X \beta\|_2^2 + \lam \|\beta\|_q^q
+#    The strong convexity of the loss function and the convextiry of the penalty term guarantees the existence and uniqueness of the global minimizer, and also the convergence of the coordinate descent algorithm. Yes, we use coordinate descent.
+#    '''
+#    cdef int p = XX.shape[0]
+#    cdef int iter_count = 0
+#    cdef int i
+#    cdef int j
+#    cdef double beta_max = 1.0
+#    cdef double diff = 1.0
+#    cdef double tmp
+#
+#    cdef np.ndarray[dtype=np.float64_t, ndim=1] beta0 = np.empty(p, dtype=np.float64) # old step
+#    cdef np.ndarray[dtype=np.float64_t, ndim=1] beta = np.empty(p, dtype=np.float64) # new step
+#    cdef np.ndarray[dtype=np.float64_t, ndim=1] grad = Xy - np.dot(XX.T, beta_init) + beta_init # gradient
+#    cdef np.ndarray[dtype=np.float64_t, ndim=1] lam_arr = np.empty(p, dtype=np.float64) # gradient
+#    
+#    cdef double[:] beta_init_view = beta_init
+#    cdef double[:] beta0_view = beta0
+#    cdef double[:] beta_view = beta
+#    cdef double[:] grad_view = grad
+#    cdef double[:, :] XX_view = XX
+#
+#    for i in range(p):
+#        beta0_view[i] = beta_init_view[i] - 1.0
+#        # beta0_view[i] = beta_init_view[i] - 1.0
+#        lam_arr[i] = lam / X_norm2[i]
+#        beta_view[i] = beta_init_view[i]
+#
+#    # beta_view[:] = beta_init_view
+#
+#    while diff / beta_max > rel_tol:
+#        for i in range(p):
+#            beta0_view[i] = beta_view[i]
+#        # beta0_view[:] = beta_view
+#        beta_max = 0.0
+#        diff = 0.0
+#
+#        # update beta
+#        for i in range(p):
+#            # update beta[i]
+#            beta_view[i] = prox_Lq(grad[i], lam_arr[i], q)
+#            # beta_view[i] = prox_Lq(grad[i], lam_arr[i], q)
+#
+#            # update grad after beta[i]
+#
+#            tmp = beta_view[i] - beta0_view[i]
+#
+#            for j in range(p):
+#                grad_view[j] -= XX_view[i, j] * tmp
+#            # grad -= XX[i, :] * (beta_view[i] - beta0_view[i])
+#            grad_view[i] += tmp
+#            # grad[i] += beta_view[i] - beta0_view[i]
+#
+#            if abs(tmp) > diff:
+#                diff = abs(tmp)
+#
+#            tmp = abs(beta_view[i])
+#            if tmp > beta_max:
+#                beta_max = tmp
+#        # beta_max = np.amax(np.absolute(beta))
+#
+#        iter_count += 1
+##        if iter_count > iter_max:
+##            print('warning: iter_max break', file=sys.stderr)
+##            break
+#    return beta
+#
+def cprod():
+    return 1.0 * 2.3
