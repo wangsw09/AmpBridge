@@ -795,7 +795,7 @@ class bridge(object):
     '''
     construct a linear model and execute various estimation and VS algorithms on it.
     '''
-    def __init__(self, lam=None, q=None, beta_true=None, tol=1e-6,
+    def __init__(self, q=None, beta_true=None, tol=1e-6,
                        iter_max=1000):
         '''
         Constructor.
@@ -807,13 +807,12 @@ class bridge(object):
         -------
 
         '''
-        self.lam = lam
         self.q = q
         self.beta_true = beta_true
         self.tol = tol
         self.iter_max = iter_max
    
-    def fit(self, X, y, beta_init=None):
+    def fit(self, X, y, lam, beta_init=None):
         '''
         This function fit the bridge regression.
 
@@ -856,17 +855,17 @@ class bridge(object):
         if beta_init is None:
             beta_init = np.zeros(p, dtype=np.float64)
 
-        if np.isscalar(self.lam) or self.lam.shape == (1,):
-            beta = cbridge_decay(XX, Xy, X_norm2, self.lam, self.q,
+        if np.isscalar(lam) or lam.shape == (1,):
+            beta = cbridge_decay(XX, Xy, X_norm2, lam, self.q,
                                  beta_init=beta_init, rel_tol=self.tol,
                                  iter_max=self.iter_max)
         else:
-            beta = cbridge_decay2(XX, Xy, X_norm2, self.lam, self.q,
+            beta = cbridge_decay2(XX, Xy, X_norm2, lam, self.q,
                                   beta_init=beta_init, rel_tol=self.tol,
                                   iter_max=self.iter_max)
         return beta
  
-    def fmse(self, beta, X, y):
+    def fmse(self, beta, lam, X, y):
         '''
         Estimate fake-MSE of bridge estimator by debiasing. This is not really
         MSE. It is the (tau ** 2), which equals (sigma **2 + MSE / delta) for
@@ -894,7 +893,7 @@ class bridge(object):
                     return np.inf
                 z = (y - np.dot(X, beta)) / (1.0 - k / float(n))
             elif self.q > 1:
-                gamma = db_gamma(beta, self.lam, self.q, delta)
+                gamma = db_gamma(beta, lam, self.q, delta)
                 z = (y - np.dot(X, beta)) / (1.0 - np.mean(1.0 / (1.0
                     + gamma * self.q * (self.q - 1.0) * np.absolute(beta) **
                     (self.q - 2))) / delta)
@@ -914,7 +913,7 @@ class bridge(object):
                         fmse[i] = np.mean(z ** 2)
             elif self.q > 1:
                 for i in xrange(m):
-                    gamma = db_gamma(beta[:, i], self.lam[i], self.q, delta)
+                    gamma = db_gamma(beta[:, i], lam[i], self.q, delta)
                     z = (y - np.dot(X, beta[:, i])) / (1.0 - np.mean(1.0 /
                         (1.0 + gamma * self.q * (self.q - 1.0) *
                             np.absolute(beta[:, i]) ** (self.q - 2))) / delta)
@@ -924,42 +923,6 @@ class bridge(object):
 
         return fmse
  
-#        if q == 1:  ## new add part, separate L1
-#            if type(lam) is not np.ndarray:
-#                clf = skll.Lasso(lam / float(len(self.y)), fit_intercept=False, max_iter=6000)
-#                # clf = skll.LassoLars(lam / float(len(self.y)), fit_intercept=False, max_iter=3000, fit_path=False)
-#                clf.fit(self.X, self.y)
-#                beta_hat = clf.coef_
-#                
-#                if np.sum(beta_hat != 0) >= len(self.y):
-#                    return np.inf
-#            else:
-#                _, beta_list, _ = skll.lasso_path(self.X, self.y, alphas=lam / float(len(self.y)), fit_intercept = False, iter_max=6000)
-#                mse_arr = np.repeat(np.inf, len(lam))
-#                for i in xrange(len(lam)):
-#                    if np.sum(beta_list[:, i] != 0) < len(self.y):
-#                        z = (self.y - np.dot(self.X, beta_list[:, i])) / ( 1.0 - np.mean(beta_list[:, i] != 0) / self.delta )
-#                        mse_arr[i] = np.mean(z ** 2)
-#                        # print("lambda: {0}, mse: {1}".format(lam[i], mse_arr[i]))
-#                return mse_arr
-#
-#        elif q == 2:
-#            reg = skll.Ridge(lam * 2.0, fit_intercept=False, tol=0.00001)
-#            reg.fit(self.X, self.y)
-#            beta_hat = reg.coef_
-#        else:
-#            #if (q, lam) not in self.bridge_result:
-#            #    self.bridge(lam, q, initial=initial, iter_max = 600) ## MARK!!! 600!!
-#            beta_hat = self.bridge(lam, q, iter_max=2000, initial=initial)
-#
-#        if q == 1:
-#            z = (self.y - np.dot(self.X, beta_hat)) / ( 1.0 - np.mean(beta_hat != 0) / self.delta )
-#        else:
-#            gamma = db_gamma(beta_hat, lam, q, self.delta)
-#            z = (self.y - np.dot(self.X, beta_hat)) / ( 1.0 - np.mean(1.0 / (1.0 + gamma * q * (q - 1.0) * np.absolute(beta_hat) ** (q - 2))) / self.delta )
-#        
-#        return np.mean(z ** 2)
-
     def mse(self, beta, beta_true=None):
         '''
         Calculate the MSE of bridge estimator.
@@ -998,7 +961,7 @@ class bridge(object):
                               "or beta_true"))
         return mse
 
-    def debias(self, beta, X, y):
+    def debias(self, beta, lam, X, y):
         '''
         Calculate the debiased estimator of beta_hat.
 
@@ -1028,7 +991,7 @@ class bridge(object):
                     raise ValueError("The estimation is inaccurate.")
                 z = (y - np.dot(X, beta)) / ( 1.0 - k / float(n) )
             else:
-                gamma = db_gamma(beta, self.lam, self.q, delta)
+                gamma = db_gamma(beta, lam, self.q, delta)
                 z = (y - np.dot(X, beta)) / ( 1.0 - np.mean(1.0 / (1.0 + gamma
                     * self.q * (self.q - 1.0) * np.absolute(beta) ** (self.q - 2))) / delta )
 
@@ -1043,7 +1006,7 @@ class bridge(object):
                         raise ValueError("The estimation is inaccurate.")
                     z = (y - np.dot(X, beta[:, i])) / ( 1.0 - k / float(n) )
                 else:
-                    gamma = db_gamma(beta[:, i], self.lam[i], self.q, delta)
+                    gamma = db_gamma(beta[:, i], lam[i], self.q, delta)
                     z = (y - np.dot(X, beta[:, i])) / ( 1.0 - np.mean(1.0 / (1.0 + gamma
                         * self.q * (self.q - 1.0) * np.absolute(beta[:, i]) ** (self.q - 2))) / delta )
 
@@ -1170,5 +1133,202 @@ class bridge(object):
 
 class amp(object):
     def __init__(self):
-        pass
+        self.sigma = None         # private
+        self.signal = None        # private, seems unnecessary
+        self.epsilon = None       # private
+        self.beta_true = None     # private
 
+        self.lasso_result = None  # private
+        self.beta_prev    = None
+        
+        self.amp_result    = {}    # private
+        self.bridge_result = {}
+        self.slope_result  = {}
+        self.S2FDR_result  = {}
+        
+        self.amp_optimal   = {}
+        self.optimal_alpha = {}
+        self.optimal_tau   = {}
+
+    def amp(self, alpha, q, threshold = 1e-6, iter_max = 500):
+        n, p  = self.shape
+        
+        beta0 = np.zeros(p)
+        z     = self.y[ : ]
+        tau   = npla.norm(z) / np.sqrt(n)  # default is l2 norm
+        beta  = eta(beta0 + np.dot(self.X.T, z), alpha * tau ** (2.0 - q), q)
+        
+        iter_count = 0
+        
+        while npla.norm(beta - beta0) / npla.norm(beta) > threshold:
+            if q in (1.0, 2.0, 1.5):
+                z     = (self.y - np.dot(self.X, beta)
+                     + np.mean(eta_derivative(beta0 + np.dot(self.X.T, z), alpha * tau ** (2.0 - q), q)) / self.delta * z)
+            else:
+                z = (self.y - np.dot(self.X, beta)
+                     + np.mean(1.0 / (1.0 + alpha * tau ** (2.0 - q) * q * (q - 1.0) * np.absolute(beta) ** (q - 2))) / self.delta * z)
+            tau   = npla.norm(z) / np.sqrt(n)
+            beta0 = beta
+            beta  = eta(beta0 + np.dot(self.X.T, z), alpha * tau ** (2.0 - q), q)
+            
+            iter_count += 1
+            if iter_count >= iter_max:
+                break
+
+        self.amp_result[(q, alpha)] = (beta, z, tau, iter_count)
+        return (beta, z, tau, iter_count)
+    
+    def two_stage_amp(self, q, s, alpha=None, threshold = 1e-6, iter_max = 500):
+        '''
+         -- if <s> is an array, return a dictionary in the form: {(q, s[i]) : beta_vec}
+         -- if <s> is a scalar, return the beta_vec
+        '''
+        if alpha != None:
+            # since we need optimal tuning for two-stage, is this part necessary?
+            if (q, alpha) in self.amp_result:
+                amp_fit = self.amp_result[(q, alpha)]
+            else:
+                amp_fit = self.amp(alpha, q, threshold, iter_max)
+            temp = amp_fit[0] + np.dot(self.X.T, amp_fit[1])
+            return temp * (np.absolute(temp) > s).astype(int)
+        else:
+            if q not in self.optimal_alpha:
+                self.optimal_tuning(q)
+            amp_fit = self.amp(self.optimal_alpha[q], q, threshold, iter_max)
+            temp = amp_fit[0] + np.dot(self.X.T, amp_fit[1])
+            if type(s) != np.ndarray:
+                return temp * (np.absolute(temp) > s).astype(int)
+            else:
+                ret = {}
+                for ss in s:
+                    ret[(q, ss)] = temp * (np.absolute(temp) > ss).astype(int)
+                return ret
+    
+    def empirical_mse(self, u, theta, tau_old, q):
+        '''
+        empirical mse from each iteration
+        u = beta + np.dot(X.T, z)
+        theta = gamma * tau_new, gamma is equivalent to alpha
+        tau_old = npla.norm(z) / np.sqrt(n)
+        '''
+        if q in (1, 1.5, 2):
+            return np.mean((eta(u, theta, q) - u) ** 2) - tau_old ** 2 + 2 * tau_old ** 2 * np.mean(eta_derivative(u, theta, q))
+        else:
+            v = eta(u, theta, q)
+            return np.mean((v - u) ** 2) - tau_old ** 2 + 2 * tau_old ** 2 * np.mean(1.0 / (1.0 + theta * q * (q - 1.0) * np.absolute(v) ** (q - 2.0)))
+    
+    def __otbisect__(self, u, tau_old, Delta, u_abmax, q, max_iter = 20):
+        '''
+        Optimal Tuning assistent function through Bisection Search
+        search for optimal gamma
+        '''
+        gamma_upper = u_abmax / float(tau_old)
+        gamma_lower = 0.0
+        for i in range(15):
+            gamma = (gamma_upper + gamma_lower) / 2.0
+            diff = (self.empirical_mse(u, tau_old ** (2.0 - q) * (gamma + Delta), tau_old, q) - self.empirical_mse(u, tau_old ** (2.0 - q) * gamma, tau_old, q)) / Delta
+            if diff > 0:
+                gamma_upper = gamma
+            elif diff < 0:
+                gamma_lower = gamma
+            else:
+                break
+        return (gamma_upper + gamma_lower) / 2.0
+    
+    def otbisect(self, u, tau_old, Delta, u_abmax, q, max_iter = 20, plot=False):
+        if plot:
+            ga_list = np.arange(0.0, 5.0, 0.05)
+            mmse_list = []
+            for gamma in ga_list:
+                mmse_list.append(self.empirical_mse(u, tau_old ** (2.0 - q) * gamma, tau_old, q))
+#            plt.plot(ga_list, mmse_list)
+#            plt.show()
+        
+        if type(Delta) == np.ndarray:
+            gamma_list = []
+            mse_list = []
+            for Dt in Delta:
+                gamma_list.append(self.__otbisect__(u, tau_old, Dt, u_abmax, q, max_iter))
+                mse_list.append(self.empirical_mse(u, tau_old ** (2.0 - q) * gamma_list[-1], tau_old, q))
+            i = np.argmin(mse_list)
+            return (gamma_list[i], Delta[i])
+        else:
+            return self.__otbisect__(u, tau_old, Delta, u_abmax, q, max_iter)
+            
+
+    def otDelta(self, u, tau_old, u_abmax, q, L1 = 5.0, L2 = 7.0):
+        D_list = 5.0  ** np.arange(0, L2, 1.0) * 10.0 ** (- L1)
+        mse_list = np.repeat(-1.0, len(D_list))
+        gamma_list = np.repeat(-1.0, len(D_list))
+       
+        for i, Delta in enumerate(D_list):
+            gamma_list[i] = self.otbisect(u, tau_old, Delta, u_abmax, q)
+            mse_list[i] = self.empirical_mse(u, tau_old ** (2.0 - q) * gamma_list[i], tau_old, q)
+        index = np.argmin(mse_list)
+        if mse_list[index] < 0:
+            raise ValueError('MSE can not be negative0')
+            return None
+        return (D_list[index], gamma_list[i])       
+
+    def optimal_tuning(self, q, tol = 1e-5, iter_max = 100):
+        '''
+        a second version of optimal tuning
+        maybe provide an argument to suppress the print() information
+        '''
+        if q in self.amp_optimal:
+            return self.amp_optimal[q]
+        
+        n, p = self.shape
+        
+        tau = []
+        gamma = []
+        
+        beta0 = np.zeros(p)
+        z = self.y[ : ]
+        tau.append(npla.norm(z) / np.sqrt(n))
+        
+        U = beta0 + np.dot(self.X.T, z)
+        U_abmax = np.amax(np.absolute(U))
+        init = self.otDelta(U, tau[-1], U_abmax, q)
+        Delta = init[0]
+        gamma.append(init[1])
+        beta = eta(U, gamma[-1] * tau[-1] ** (2.0 - q), q)
+        
+        iter_count = 0
+        
+        print('-- outer loop --', sep='', end='', file=sys.stderr)
+        while npla.norm(beta - beta0) / npla.norm(beta) > tol:
+            if q in (1.0, 2.0, 1.5):
+                z     = (self.y - np.dot(self.X, beta)
+                     + np.mean(eta_derivative(U, gamma[-1] * tau[-1] ** (2.0 - q), q)) / self.delta * z)
+            else:
+                z     = (self.y - np.dot(self.X, beta)
+                     + np.mean(1.0 / (1.0 + gamma[-1] * tau[-1] ** (2.0 - q) * q * (q - 1.0) * np.absolute(U) ** (q - 2))) / self.delta * z)
+            tau.append(npla.norm(z) / np.sqrt(n))
+            
+            beta0 = beta
+            U = beta0 + np.dot(self.X.T, z)
+            U_abmax = np.amax(np.absolute(U))
+#            if iter_count % 5 == 0:
+#                temp = self.otbisect(U, tau[-1], 5.0  ** np.arange(0, 7.0, 1.0) * 10.0 ** (- 5), U_abmax, q, plot=True)
+#                gamma.append(temp[0])
+#                Delta = temp[1]
+#            else:
+            gamma.append(self.otbisect(U, tau[-1], Delta, U_abmax, q))
+    
+            beta = eta(U, gamma[-1] * tau[-1] ** (2.0 - q), q)
+            
+            iter_count += 1
+            if iter_count % 5 == 0:
+                print(' ', iter_count, ' --', sep='', end='', file=sys.stderr)
+            if iter_count >= iter_max:
+                break
+        print('\n', sep='', end='', file=sys.stderr)
+            
+        tau = np.array(tau)
+        gamma = np.array(gamma)
+        self.amp_optimal[q] = (beta, z, tau, gamma, iter_count)
+        self.optimal_alpha[q] = np.mean(gamma[-10 : ])
+        self.optimal_tau[q] = np.mean(tau[-10 : ])
+        return (beta, z, tau, gamma, iter_count)  # make these returns simpler
+ 
