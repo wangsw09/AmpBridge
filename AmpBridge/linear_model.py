@@ -1014,122 +1014,155 @@ class bridge(object):
             
         return beta_dbs
     
-    def bridge_optimalTune(self, q):
+    def auto_tune(self, X, y, lam_upp, tol=1e-3):
         '''
-        search for the optimal tuning among lambda_arr
+        Search for the optimal tuning through cross-validation using
+        self.fmsea() adaptively.
+
+        * later should provide a bool parameter <record>, once set to True,
+        * return the array of lam used and also the mse array calculated, so
+        * people can do some figures.
+
         Parameters
         ----------
-            q: q >= 1, Lq bridge
-            lambda_arr: array of tuning, must be arranged in decreasing order
+        X: np.ndarray, dtype=np.float64, ndim=2
+            The 2-dim array of independent variable.
+        y: np.ndarray, dtype=np.float64, ndim=1
+            The 1-dim array of response variable.
+        lam_upp: float
+            The upper bound suggested for cross-validation. Searching for
+            optimal tuning with start from this value and goes downwards.
         
         Returns
         -------
-            mse_arr: return the mse array correspond to lambda_arr
-            lambda_opt: optimal lambda among lambda_arr
-            mse_opt: optimal MSE correspond to lambda_opt
-            beta_opt: the estimator correspond to lambda_opt
+        mse_min: np.ndarray, dtype=np.float64, ndim=1
+            Optimal MSE value..
+        lam_opt: float
+            Optimal lambda.
         '''
-
-
-        if q < 1: ## we can consider remove some of these conditions
-            raise ValueError('q must be greater than or equal to 1.')
+        grid_size = 10
+        lam = lam_upp
+        grid = np.linspace(lam, lam / 10.0, grid_size)
         
-        lam_unit  = npla.norm(np.dot(self.X.T, self.y), np.inf) / 2.0
-        lam_low   = 0.1
-        lam_upp   = 0.1 # lam_low, lam_opt specified to pass the 1st while & if.
-        grid_size = 15
+        XX, Xy, X_norm2 = self.__preprocess(X, y)
+        beta = self.__cfit(XX, Xy, X_norm2, grid, beta_init=None)
+        mse_arr = self.fmse(beta, grid, X, y)
+        i_opt = np.argmin(mse_arr)
+        lam_opt = grid[i_opt]
+        lam_opt0 = grid[i_opt]
+        mse_min = mse_arr[i_opt]
+        mse_min0 = mse_arr[i_opt]
 
-        mse_min0  = 0
-        mse_min   = 100000.0
-        i_opt     = 0
-        lam_opt0  = 0
-        lam_opt   = 0
+        if i_opt == 0:
+            raise ValueError("lam_upp not large enough. Try a larger value.")
 
-        while i_opt == grid_size - 1 or i_opt == 0:
-            if np.absolute(mse_min0 - mse_min) / mse_min < 0.01:
-                return lam_opt0
+        while i_opt == grid_size - 1:
             mse_min0 = mse_min
             lam_opt0 = lam_opt
+
+            lam /= 10.0
+            grid = np.linspace(lam, lam / 10.0, grid_size)
             
-            if i_opt == grid_size - 1:
-                lam_upp =  lam_low
-                lam_low /= 10.0
-            else:
-                lam_low =  lam_upp
-                lam_upp += lam_unit
- 
-            grid = np.linspace(lam_upp, lam_low, grid_size) # by default end-pt included
+            beta = self.__cfit(XX, Xy, X_norm2, grid, beta_init=None)
+            mse_arr = self.fmse(beta, grid, X, y)
+            i_opt = np.argmin(mse_arr)
 
-            if q == 1:
-                mse_arr = self.bridge_mse(grid, 1)
-                i_opt   = np.argmin(mse_arr)
-                mse_min = mse_arr[i_opt]
-                lam_opt = grid[i_opt]
-            else:
-                for j in xrange(grid_size):
-                    mse_tmp = self.bridge_mse(grid[j], q, initial=self.beta_prev)
-                    if mse_tmp < mse_min:
-                        i_opt   = j
-                        mse_min = mse_tmp
-                lam_opt = grid[i_opt]
-                
-        return lam_opt
-    
-    def xbridge_optimalTune(self, q, lam0, Delta = 0.05, tol=0.1):
+            lam_opt = grid[i_opt]
+            mse_min = mse_arr[i_opt]
+
+            if abs(mse_min - mse_min0) / mse_min < tol:
+                print("No obvious decrease in MSE. Stop.")
+                return lam_opt0, mse_min0
+
+        print("Find local minimum. Stop")
+        return lam_opt, mse_min
+     
+
+    def __cfit(self, XX, Xy, X_norm2, lam, beta_init=None):
         '''
-        search for the optimal tuning among lambda_arr
-        arguments:
-            q: q >= 1, Lq bridge
-            lambda_arr: array of tuning, must be arranged in decreasing order
-        value:
-            mse_arr: return the mse array correspond to lambda_arr
-            lambda_opt: optimal lambda among lambda_arr
-            mse_opt: optimal MSE correspond to lambda_opt
-            beta_opt: the estimator correspond to lambda_opt
+        This function fit the bridge regression.
+
+        Parameters
+        ----------
+        XX: np.ndarray, dtype=np.float64, ndim=2
+            This 2-dim array equals X.T * X with each column then divided by
+            the corresponding square norm of column of X.
+        Xy: np.ndarray, dtype=np.float64, ndim=1
+            Thhis 1-dim array equals X.T * y with each component divided by
+            the corresponding component of X_norm2.
+        X_norm2: np.ndarray, dtype=np.float64, ndim=1
+            This 1-dim array equals the square norm of columns of X.
+        beta_init: np.ndarray, dtype=np.float64, ndim=1
+            beta here means the coefficient vector we would like to find.
+            beta_init provides initialization for bridge regression. If None,
+            beta_init=np.zeros(p, dtype=np.float64)
+        tol: float, >0
+            The tolerance of convergence criterion. Here we use it as relative
+            tolerance.
+        iter_max: int, >0
+            The maximal iteration allowed. Quit the loop once exceeded this
+            bound.
+
+        Returns
+        -------
+        beta: np.ndarray, dtype=np.float64, ndim=1 or 2
+            The fitted coefficient vector or 2-dim array, depending on whether
+            lam is a scalar or an array.
+            If lam is a scalar, then beta is an 1-dim array of length p;
+            If lam is an 1-dim array with length m, then beta is a 2-dim array
+            of shape (p, m), with ith column corresponding to the regressor of
+            lam[i].
+
+        This function is just to wrap the cbridge_decay and cbridge_decay2
+        functions, in order for inner use.
         '''
+        p  = XX.shape[0]
 
+        if beta_init is None:
+            beta_init = np.zeros(p, dtype=np.float64)
 
-        if q < 1:
-            raise ValueError('q must be greater than or equal to 1.')
-
-#        h = 0.05
-#        lam = lam0
-#        lam0 = lam0 + 1
-#        count = 1.0
-#
-#        while (np.absolute(lam - lam0) > tol):
-#            lam0 = lam
-#            deri = (self.bridge_mse(lam0 + h, q) - self.bridge_mse(lam0 - h, q)) / 2.0 / h
-#            lam = max(lam0 - deri / count, 2 * h)
-#            count += 1.0
-#
-#        return lam
-        
-
-        if self.bridge_mse(lam0 + Delta, q) - self.bridge_mse(lam0, q) > 0:
-            lamR = lam0
-            lamL = lam0 / 2.0
-
-            while ((self.bridge_mse(lamL + Delta, q) - self.bridge_mse(lamL, q)) > 0):
-                lamR = lamL
-                lamL = lamL / 2.0
+        if np.isscalar(lam) or lam.shape == (1,):
+            beta = cbridge_decay(XX, Xy, X_norm2, lam, self.q,
+                                 beta_init=beta_init, rel_tol=self.tol,
+                                 iter_max=self.iter_max)
         else:
-            lamL = lam0
-            lamR = lam0 * 2.0
+            beta = cbridge_decay2(XX, Xy, X_norm2, lam, self.q,
+                                  beta_init=beta_init, rel_tol=self.tol,
+                                  iter_max=self.iter_max)
+        return beta
 
-            while ((self.bridge_mse(lamR + Delta, q) - self.bridge_mse(lamR, q)) < 0):
-                lamL = lamR
-                lamR = lamR * 2.0
+    def __preprocess(self, X, y):
+        '''
+        Calculate the preprocessing matrix XX, Xy, X_norm2 from X, y.
 
-        while (lamR - lamL) > tol:
-            lamM = (lamL + lamR) / 2.0
-            if (self.bridge_mse(lamM + Delta, q) - self.bridge_mse(lamM, q)) < 0:
-                lamL = lamM
-            else:
-                lamR = lamM
+        Parameters
+        ----------
+        X: np.ndarray[dtype=np.float64, ndim=2]
+            The 2-dim array of independent variables.
+        y: np.ndarray[dtype=np.float64, ndim=1]
+            The 1-dim array of response variables.
 
-        return (lamL + lamR) / 2.0
+        Returns
+        -------
+        XX: np.ndarray[dtype=np.float64, ndim=2]
+            The 2-dim array of X.T * X, then with each column divided by the
+            squared norm of columns of X.
+        Xy: np.ndarray[dtype=np.float64, ndim=1]
+            The 1-dim array of X.T * y, then with each column divided by the
+            squared norm of columns of X.
+        X_norm2: np.ndarray[dtype=np.float64, ndim=1]
+            The 1-dim array of the squared norm of columns of X.
 
+        This function does the preprocessing part. This should be usually used
+        together with the function __cfit() to avoid repeating the
+        preprocessing part when we need to call fit() multiple times on the
+        same data.
+        '''
+        X_norm2 = npla.norm(X, axis=0) ** 2
+        Xy = np.dot(X.T, y) / X_norm2
+        XX = np.dot(X.T, X) / X_norm2
+        return XX, Xy, X_norm2 
+   
 
 class amp(object):
     def __init__(self):
