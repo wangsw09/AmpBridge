@@ -38,9 +38,10 @@ ath = ab.amp_theory(eps=eps, delta=delta, sigma=sigma, nonzero_dist=nonzero_dist
 
 # optimal tuning for Lq penalty with q=1.2
 q = 1.2
-alpha = ath.alpha_optimal(q)
-tau = ath.tau_of_alpha(alpha, q)
-mse = ath.mse(alpha, tau, q)
+alpha = ath.alpha_optimal(q)  # 1.096
+tau = ath.tau_of_alpha(alpha, q)  # 0.740
+mse = ath.mse(alpha, tau, q)  # 0.208
+lam = ath.lambda_of_alpha(alpha, q) # 0.44
 
 print("The optimal MSE for q=1.2 under the above parameter settings is {0}".format(mse))
 ```
@@ -49,6 +50,7 @@ print("The optimal MSE for q=1.2 under the above parameter settings is {0}".form
 ```python
 from __future__ import print_function
 import AmpBridge as ab
+import numpy as np
 
 p = 8000
 delta = 0.7
@@ -58,12 +60,25 @@ signl = ab.ddist([1], [1])
 
 y, X, beta_true = ab.data_gen.linmod(p, delta, eps, sigma, signl)
 
-lm = ab.linear_model(y, X)
+brg = ab.bridge(q = 1.2)
 q = 1.2
-lam = 4.0
 
-beta_hat = lm.bridge(lam, q)
-mse_hat = np.sum((beta_hat - beta_true) ** 2.0) / p
+lam = 0.44
+lam_arr = np.linspace(1, 0.1, 10)
+
+beta = brg.fit(X, y, lam)  # bridge regression on single value of lam
+beta_arr = brg.fit(X, y, lam_arr)  # bridge regression on array values of lam
+
+fm = brg.fmse(beta, lam, X, y)  # fake MSE on single value of lam
+fm = brg.fmse(beta_arr, lam_arr, X, y)  # fake MSE on array values of lam
+
+m = brg.mse(beta, beta_true)  # MSE on single value of lam
+m = brg.mse(beta_arr, beta_true)  # MSE on array values of lam
+
+db = brg.debias(beta, lam, X, y)  # debiased version of single value of lam
+db_arr = brg.debias(beta_arr, lam_arr, X, y)  # debiased version of array values of lam.
+
+lam_opt = brg.auto_tune(X, y, 11)  # find the optimal tuning
 
 print("The sample MSE for q=1.2 under the optimal tuning is {0}".format(mse_hat))
 print("The above two values should be very close.")
