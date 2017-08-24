@@ -79,9 +79,6 @@ db = brg.debias(beta, lam, X, y)  # debiased version of single value of lam
 db_arr = brg.debias(beta_arr, lam_arr, X, y)  # debiased version of array values of lam.
 
 lam_opt = brg.auto_tune(X, y, 11)  # find the optimal tuning
-
-print("The sample MSE for q=1.2 under the optimal tuning is {0}".format(mse_hat))
-print("The above two values should be very close.")
 ```
 
 ## Details
