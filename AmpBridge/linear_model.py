@@ -346,23 +346,23 @@ class linear_model:
         else:
             beta_init = np.zeros(p, dtype=np.float64)
         
-        return ccbridge(self.XX, self.Xy, self.X_norm2, lam, q, beta_init, rel_tol=1e-6)
+        return cbridge_decay(self.XX, self.Xy, self.X_norm2, lam, q, beta_init, rel_tol=1e-6)
 
-    def ccbridge(self, lam, q, tol=1e-6, iter_max = 1000, initial = None, store=True):
-        '''
-        run bridge regression by coordinate descent.
-        currently deal with any q >= 1
-        I really think I should lower the precision to maybe 1e-3
-        '''
-
-        n, p  = self.shape
-
-        if initial:
-            beta_init = initial
-        else:
-            beta_init = np.zeros(p, dtype=np.float64)
-        
-        return cccbridge(self.XX, self.Xy, self.X_norm2, lam, q, beta_init, rel_tol=1e-6)
+#    def ccbridge(self, lam, q, tol=1e-6, iter_max = 1000, initial = None, store=True):
+#        '''
+#        run bridge regression by coordinate descent.
+#        currently deal with any q >= 1
+#        I really think I should lower the precision to maybe 1e-3
+#        '''
+#
+#        n, p  = self.shape
+#
+#        if initial:
+#            beta_init = initial
+#        else:
+#            beta_init = np.zeros(p, dtype=np.float64)
+#        
+#        return cccbridge(self.XX, self.Xy, self.X_norm2, lam, q, beta_init, rel_tol=1e-6)
  
     def bridge_mse(self, lam, q, initial = None):
         '''
@@ -790,4 +790,385 @@ def db_gamma(beta, lam, q, delta):
     ## the upper bound is estimable by using the min(beta) or max(beta); double check;
     return bisect_search(tmp_func, lower = lam / 1.1, unit = 10)
 
+
+class bridge(object):
+    '''
+    construct a linear model and execute various estimation and VS algorithms on it.
+    '''
+    def __init__(self, lam=None, q=None, beta_true=None, tol=1e-6,
+                       iter_max=1000):
+        '''
+        Constructor.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        '''
+        self.lam = lam
+        self.q = q
+        self.beta_true = beta_true
+        self.tol = tol
+        self.iter_max = iter_max
+   
+    def fit(self, X, y, beta_init=None):
+        '''
+        This function fit the bridge regression.
+
+        Parameters
+        ----------
+        X: np.ndarray, dtype=np.float64, ndim=2
+            The 2-dim array of independent variable, of dimension (n, p)
+        y: np.ndarray, dtype=np.float64, ndim=1
+            The 1-dim array of response variable, of dimension (n,)
+        beta_init: np.ndarray, dtype=np.float64, ndim=1
+            beta here means the coefficient vector we would like to find.
+            beta_init provides initialization for bridge regression. If None,
+            beta_init=np.zeros(p, dtype=np.float64)
+        tol: float, >0
+            The tolerance of convergence criterion. Here we use it as relative
+            tolerance.
+        iter_max: int, >0
+            The maximal iteration allowed. Quit the loop once exceeded this
+            bound.
+
+        Returns
+        -------
+        beta: np.ndarray, dtype=np.float64, ndim=1 or 2
+            The fitted coefficient vector or 2-dim array, depending on whether
+            lam is a scalar or an array.
+            If lam is a scalar, then beta is an 1-dim array of length p;
+            If lam is an 1-dim array with length m, then beta is a 2-dim array
+            of shape (p, m), with ith column corresponding to the regressor of
+            lam[i].
+
+        We run
+            0.5 * \|y - X\beta\|_2^2 + \lambda \|beta\|_q^q
+        to obtain the bridge regression estimator for q >= 1.
+        '''
+        p  = X.shape[1]
+        X_norm2 = npla.norm(X, axis=0) ** 2
+        Xy = np.dot(X.T, y) / X_norm2
+        XX = np.dot(X.T, X) / X_norm2
+
+        if beta_init is None:
+            beta_init = np.zeros(p, dtype=np.float64)
+
+        if np.isscalar(self.lam) or self.lam.shape == (1,):
+            beta = cbridge_decay(XX, Xy, X_norm2, self.lam, self.q,
+                                 beta_init=beta_init, rel_tol=self.tol,
+                                 iter_max=self.iter_max)
+        else:
+            beta = cbridge_decay2(XX, Xy, X_norm2, self.lam, self.q,
+                                  beta_init=beta_init, rel_tol=self.tol,
+                                  iter_max=self.iter_max)
+        return beta
+ 
+    def fmse(self, beta, X, y):
+        '''
+        Estimate fake-MSE of bridge estimator by debiasing. This is not really
+        MSE. It is the (tau ** 2), which equals (sigma **2 + MSE / delta) for
+        orthogonal design. Since it is up to a scalar and constant of MSE, we
+        can also use it for tuning.
+
+        Parameters
+        ----------
+        beta: np.ndarray, dtype=np.float64, ndim=1 or 2
+            The fitted beta array, either 1-dim or 2-dim, depending whether
+            lam is a scalar or an array.
+
+        Returns
+        -------
+        mse: float or np.ndarray[dtype=np.float64, ndim=1]
+            The 
+        '''
+        n, p = X.shape
+        delta = n / float(p)
+
+        if beta.ndim == 1:
+            if self.q == 1:
+                k = np.count_nonzero(beta)
+                if k >= n:
+                    return np.inf
+                z = (y - np.dot(X, beta)) / (1.0 - k / float(n))
+            elif self.q > 1:
+                gamma = db_gamma(beta, self.lam, self.q, delta)
+                z = (y - np.dot(X, beta)) / (1.0 - np.mean(1.0 / (1.0
+                    + gamma * self.q * (self.q - 1.0) * np.absolute(beta) **
+                    (self.q - 2))) / delta)
+            else:
+                raise NotImplementedError("q < 1 not implemented.")
+            fmse = np.mean(z ** 2)
+        else:
+            m = beta.shape[1]
+            fmse = np.empty(m, dtype=np.float64)
+            if self.q == 1:
+                for i in xrange(m):
+                    k = np.count_nonzero(beta[:, i], axis=0)
+                    if k >= n:
+                        fmse[i] = np.inf
+                    else:
+                        z = (y - np.dot(X, beta[:, i])) / (1.0 - k / float(n))
+                        fmse[i] = np.mean(z ** 2)
+            elif self.q > 1:
+                for i in xrange(m):
+                    gamma = db_gamma(beta[:, i], self.lam[i], self.q, delta)
+                    z = (y - np.dot(X, beta[:, i])) / (1.0 - np.mean(1.0 /
+                        (1.0 + gamma * self.q * (self.q - 1.0) *
+                            np.absolute(beta[:, i]) ** (self.q - 2))) / delta)
+                    fmse[i] = np.mean(z ** 2)
+            else:
+                raise NotImplementedError("q < 1 not implemented.")
+
+        return fmse
+ 
+#        if q == 1:  ## new add part, separate L1
+#            if type(lam) is not np.ndarray:
+#                clf = skll.Lasso(lam / float(len(self.y)), fit_intercept=False, max_iter=6000)
+#                # clf = skll.LassoLars(lam / float(len(self.y)), fit_intercept=False, max_iter=3000, fit_path=False)
+#                clf.fit(self.X, self.y)
+#                beta_hat = clf.coef_
+#                
+#                if np.sum(beta_hat != 0) >= len(self.y):
+#                    return np.inf
+#            else:
+#                _, beta_list, _ = skll.lasso_path(self.X, self.y, alphas=lam / float(len(self.y)), fit_intercept = False, iter_max=6000)
+#                mse_arr = np.repeat(np.inf, len(lam))
+#                for i in xrange(len(lam)):
+#                    if np.sum(beta_list[:, i] != 0) < len(self.y):
+#                        z = (self.y - np.dot(self.X, beta_list[:, i])) / ( 1.0 - np.mean(beta_list[:, i] != 0) / self.delta )
+#                        mse_arr[i] = np.mean(z ** 2)
+#                        # print("lambda: {0}, mse: {1}".format(lam[i], mse_arr[i]))
+#                return mse_arr
+#
+#        elif q == 2:
+#            reg = skll.Ridge(lam * 2.0, fit_intercept=False, tol=0.00001)
+#            reg.fit(self.X, self.y)
+#            beta_hat = reg.coef_
+#        else:
+#            #if (q, lam) not in self.bridge_result:
+#            #    self.bridge(lam, q, initial=initial, iter_max = 600) ## MARK!!! 600!!
+#            beta_hat = self.bridge(lam, q, iter_max=2000, initial=initial)
+#
+#        if q == 1:
+#            z = (self.y - np.dot(self.X, beta_hat)) / ( 1.0 - np.mean(beta_hat != 0) / self.delta )
+#        else:
+#            gamma = db_gamma(beta_hat, lam, q, self.delta)
+#            z = (self.y - np.dot(self.X, beta_hat)) / ( 1.0 - np.mean(1.0 / (1.0 + gamma * q * (q - 1.0) * np.absolute(beta_hat) ** (q - 2))) / self.delta )
+#        
+#        return np.mean(z ** 2)
+
+    def mse(self, beta, beta_true=None):
+        '''
+        Calculate the MSE of bridge estimator.
+
+        Parameters
+        ----------
+        beta: np.ndarray, dtype=np.float64, ndim=1 or 2
+            The fitted beta array, either 1-dim or 2-dim, depending whether
+            lam is a scalar or an array.
+        beta_true: np.ndarray, dtype=np.float64, ndim=1
+            True coefficient, must be provided if self.beta_true is None.
+
+        Returns
+        -------
+        mse: float or np.ndarray[dtype=np.float64, ndim=1]
+            The true MSE of estimator beta. If beta is 1-dim, will return
+            scalar; np.array otherwise.
+
+        Calculate the MSE by
+            MSE = np.mean((beta - beta_true) ** 2)
+        '''
+        if self.beta_true is not None:
+            if beta.ndim == 1:
+                mse = np.mean((beta - self.beta_true) ** 2)
+            else:
+                mse = np.mean((beta - self.beta_true[:, np.newaxis]) ** 2,
+                        axis = 0)
+        elif beta_true is not None:
+            if beta.ndim == 1:
+                mse = np.mean((beta - beta_true) ** 2)
+            else:
+                mse = np.mean((beta - beta_true[:, np.newaxis]) ** 2,
+                              axis = 0)
+        else:
+            raise ValueError(("Please provide at least one of self.beta_true "
+                              "or beta_true"))
+        return mse
+
+    def debias(self, beta, X, y):
+        '''
+        Calculate the debiased estimator of beta_hat.
+
+        Parameters
+        ----------
+        beta: np.ndarray, dtype=np.float64, ndim=1
+            The bridge estimator.
+        X: np.ndarray, dtype=np.float64, ndim=2
+            The 2-dim array of independent variable.
+        y: np.ndarray, dtype=np.float64, ndim=1
+            The 1-dim array of response variable.
+
+        Returns
+        -------
+        beta_dbs: debiased version of beta
+
+        This function is based on the estimated beta,
+        and does not check the validity of beta_hat. Please
+        make sure the estiamtor is good before debiasing.
+        '''
+        n, p = X.shape
+        delta = n / float(p)
+        if beta.ndim == 1:
+            if self.q == 1:
+                k = np.count_nonzero(beta)
+                if k >= n:
+                    raise ValueError("The estimation is inaccurate.")
+                z = (y - np.dot(X, beta)) / ( 1.0 - k / float(n) )
+            else:
+                gamma = db_gamma(beta, self.lam, self.q, delta)
+                z = (y - np.dot(X, beta)) / ( 1.0 - np.mean(1.0 / (1.0 + gamma
+                    * self.q * (self.q - 1.0) * np.absolute(beta) ** (self.q - 2))) / delta )
+
+            beta_dbs = beta + np.dot(X.T, z)
+        else:
+            m = beta.shape[1]
+            beta_dbs = np.empty((p, m), dtype=np.float64)
+            for i in xrange(m):
+                if self.q == 1:
+                    k = np.count_nonzero(beta[:, i])
+                    if k >= n:
+                        raise ValueError("The estimation is inaccurate.")
+                    z = (y - np.dot(X, beta[:, i])) / ( 1.0 - k / float(n) )
+                else:
+                    gamma = db_gamma(beta[:, i], self.lam[i], self.q, delta)
+                    z = (y - np.dot(X, beta[:, i])) / ( 1.0 - np.mean(1.0 / (1.0 + gamma
+                        * self.q * (self.q - 1.0) * np.absolute(beta[:, i]) ** (self.q - 2))) / delta )
+
+                beta_dbs[:, i] = beta[:, i] + np.dot(X.T, z)
+            
+        return beta_dbs
+    
+    def bridge_optimalTune(self, q):
+        '''
+        search for the optimal tuning among lambda_arr
+        Parameters
+        ----------
+            q: q >= 1, Lq bridge
+            lambda_arr: array of tuning, must be arranged in decreasing order
+        
+        Returns
+        -------
+            mse_arr: return the mse array correspond to lambda_arr
+            lambda_opt: optimal lambda among lambda_arr
+            mse_opt: optimal MSE correspond to lambda_opt
+            beta_opt: the estimator correspond to lambda_opt
+        '''
+
+
+        if q < 1: ## we can consider remove some of these conditions
+            raise ValueError('q must be greater than or equal to 1.')
+        
+        lam_unit  = npla.norm(np.dot(self.X.T, self.y), np.inf) / 2.0
+        lam_low   = 0.1
+        lam_upp   = 0.1 # lam_low, lam_opt specified to pass the 1st while & if.
+        grid_size = 15
+
+        mse_min0  = 0
+        mse_min   = 100000.0
+        i_opt     = 0
+        lam_opt0  = 0
+        lam_opt   = 0
+
+        while i_opt == grid_size - 1 or i_opt == 0:
+            if np.absolute(mse_min0 - mse_min) / mse_min < 0.01:
+                return lam_opt0
+            mse_min0 = mse_min
+            lam_opt0 = lam_opt
+            
+            if i_opt == grid_size - 1:
+                lam_upp =  lam_low
+                lam_low /= 10.0
+            else:
+                lam_low =  lam_upp
+                lam_upp += lam_unit
+ 
+            grid = np.linspace(lam_upp, lam_low, grid_size) # by default end-pt included
+
+            if q == 1:
+                mse_arr = self.bridge_mse(grid, 1)
+                i_opt   = np.argmin(mse_arr)
+                mse_min = mse_arr[i_opt]
+                lam_opt = grid[i_opt]
+            else:
+                for j in xrange(grid_size):
+                    mse_tmp = self.bridge_mse(grid[j], q, initial=self.beta_prev)
+                    if mse_tmp < mse_min:
+                        i_opt   = j
+                        mse_min = mse_tmp
+                lam_opt = grid[i_opt]
+                
+        return lam_opt
+    
+    def xbridge_optimalTune(self, q, lam0, Delta = 0.05, tol=0.1):
+        '''
+        search for the optimal tuning among lambda_arr
+        arguments:
+            q: q >= 1, Lq bridge
+            lambda_arr: array of tuning, must be arranged in decreasing order
+        value:
+            mse_arr: return the mse array correspond to lambda_arr
+            lambda_opt: optimal lambda among lambda_arr
+            mse_opt: optimal MSE correspond to lambda_opt
+            beta_opt: the estimator correspond to lambda_opt
+        '''
+
+
+        if q < 1:
+            raise ValueError('q must be greater than or equal to 1.')
+
+#        h = 0.05
+#        lam = lam0
+#        lam0 = lam0 + 1
+#        count = 1.0
+#
+#        while (np.absolute(lam - lam0) > tol):
+#            lam0 = lam
+#            deri = (self.bridge_mse(lam0 + h, q) - self.bridge_mse(lam0 - h, q)) / 2.0 / h
+#            lam = max(lam0 - deri / count, 2 * h)
+#            count += 1.0
+#
+#        return lam
+        
+
+        if self.bridge_mse(lam0 + Delta, q) - self.bridge_mse(lam0, q) > 0:
+            lamR = lam0
+            lamL = lam0 / 2.0
+
+            while ((self.bridge_mse(lamL + Delta, q) - self.bridge_mse(lamL, q)) > 0):
+                lamR = lamL
+                lamL = lamL / 2.0
+        else:
+            lamL = lam0
+            lamR = lam0 * 2.0
+
+            while ((self.bridge_mse(lamR + Delta, q) - self.bridge_mse(lamR, q)) < 0):
+                lamL = lamR
+                lamR = lamR * 2.0
+
+        while (lamR - lamL) > tol:
+            lamM = (lamL + lamR) / 2.0
+            if (self.bridge_mse(lamM + Delta, q) - self.bridge_mse(lamM, q)) < 0:
+                lamL = lamM
+            else:
+                lamR = lamM
+
+        return (lamL + lamR) / 2.0
+
+
+class amp(object):
+    def __init__(self):
+        pass
 
