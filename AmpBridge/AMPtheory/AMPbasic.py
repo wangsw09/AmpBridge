@@ -14,6 +14,22 @@ class amp_theory:
     Compute quantities related to AMP theoretically through the state evolution equation.
     '''
     def __init__(self, eps, delta, sigma, nonzero_dist):
+        '''
+        Constructor.
+
+        Parameters
+        ----------
+        eps: float, [0, 1]
+            epsilon, specifying sparsity of the system.
+        delta: float, [0, inf)
+            delta, which is definde as n / p, where n is the sample size, p is
+            the number of features.
+        sigma: float, [0, inf)
+            sigma, the noise level.
+        nonzero_dist: ddist class object.
+            Specify the nonzero distribution of the signal.
+
+        '''
         self.epsilon = eps
         self.delta   = delta
         self.sigma   = sigma
@@ -22,16 +38,20 @@ class amp_theory:
 
     def mse_func(self, x, alpha, tau, q):
         '''
-        return the function inside MSE part in the state evolution equation.
-        parameters:
+        Return the function inside MSE part in the state evolution equation.
+
+        Parameters
+        ----------
             x: given beta = x
             alpha: tuning alpha, must be larger than an alpha0
-            tau: positive value
-        return:
-            The value of the integrand of the MSE part
-        Detail:
-            This function calculates the MSE part in the following equation
-            tau ** 2 = sigma ** 2 + Expectation(mse_func(x, alpha, tau)) / delta
+            tau: positive value.
+
+        Returns
+        -------
+            The value of the integrand of the MSE part.
+
+        This function calculates the MSE part in the following equation
+        tau ** 2 = sigma ** 2 + Expectation(mse_func(x, alpha, tau)) / delta.
         '''
         if q == 1:
             return ( tau ** 2 * (1.0 + alpha ** 2) - x ** 2 ) * (ncdf(x / tau - alpha) + ncdf( - x / tau - alpha)) - (tau * x + tau ** 2 * alpha) * npdf(alpha - x / tau) + (tau * x - tau ** 2 * alpha) * npdf(alpha + x / tau) + x ** 2
@@ -39,20 +59,24 @@ class amp_theory:
             return (tau ** 2.0 + 4 * alpha ** 2.0 * x ** 2.0) / (1.0 + 2.0 * alpha) ** 2
         else:
             # temp_func = lambda z: (prox_Lq(x + tau * z, t = alpha * tau ** (2.0 - q), q = q) - x) ** 2 * npdf(z)
-            return spi.quad(mse_integrand, - 5, 5, (x, alpha, tau, q))[0]  # the integral limit may need adjustment for accuracy
+            return spi.quad(mse_integrand, -7, 7, (x, alpha, tau, q))[0]  # the integral limit may need adjustment for accuracy
             # return spi.quad(temp_func, - 5, 5)[0]  # the integral limit may need adjustment for accuracy
 
     def mse(self, alpha, tau, q):
         '''
-        return the MSE in the state evolution
-        parameters:
+        Return the MSE in the state evolution.
+
+        Parameters
+        ----------
             alpha: tuning alpha, must be larger than an alpha0
-            tau: positive value
-        return:
+            tau: positive value.
+
+        Returns
+        -------
             The value of the MSE part
-        Detail:
-            This function calculates the MSE part in the following equation
-            tau ** 2 = sigma ** 2 + MSE(alpha, tau) / delta
+
+        This function calculates the MSE part in the following equation
+        tau ** 2 = sigma ** 2 + MSE(alpha, tau) / delta
         '''
         return self.dist.expectation(self.mse_func, alpha=alpha, tau=tau, q = q)
 
@@ -66,7 +90,7 @@ class amp_theory:
             return (alpha * x ** 2.0 - 0.5 * tau ** 2) / (alpha + 0.5) ** 3
         else:
             # temp_func = lambda z: 2.0 * tau * (prox_Lq(x + z * tau, alpha * tau ** (2.0 - q), q) - x) * prox_Lq_drvt_t(x / tau + z, alpha, q) * npdf(z)
-            return spi.quad(mse_drvt_integrand, - 5, 5, (x, alpha, tau, q))[0]  # the integral limit may need adjustment for accuracy
+            return spi.quad(mse_drvt_integrand, -7, 7, (x, alpha, tau, q))[0]  # the integral limit may need adjustment for accuracy
             # return spi.quad(temp_func, - 5, 5)[0]  # the integral limit may need adjustment for accuracy
 
     def mse_derivative(self, alpha, tau, q):
@@ -79,20 +103,37 @@ class amp_theory:
         '''
         Compute tau from alpha. Deduced from state evolution equation
         '''
-#        if alpha <= self.alpha_lower_bound(category = 'rough', q = q):
-#            raise ValueError('alpha is smaller than its lower bound to find tau')
-#       we need to consider the case when sigma=0 for q<=1, calculate phase transition
+        if self.sigma == 0.0:
+            pass
         temp_func = lambda tau: self.mse(alpha, tau, q) / self.delta + self.sigma ** 2 - tau ** 2
         return bisect_search(temp_func, lower=self.sigma, unit=self.sigma, accuracy = tol)
 
     def alpha_optimal(self, q):
         temp_func = lambda alpha: self.mse_derivative(alpha, self.tau_of_alpha(alpha, q), q)
-        opt_val = bisect_search(temp_func, lower = self.alpha_lower_bound('rough', q) + 0.01, unit = self.sigma)  # the lower bound and upper bound here need to be modified
+        opt_val = bisect_search(temp_func, lower = self.alpha_lower_bound('rough', q),
+                                lower_sign=-1, unit = self.sigma)
         return opt_val
 
     def alpha_lower_bound(self, category, q):
         '''
-        find two kinds of lower bound for alpha        
+        Find the lower bounds of legal alpha.
+
+        Parameters
+        ----------
+        category: string
+            Specify the type of lower bounds we would like to calcualte.
+            Two kinds are provided.
+        q: float
+            Specify the penalty we use.
+
+        Returns
+        -------
+        alpha
+
+        The 'rough' type is calculated from ...
+        For the accurate version, from the calibration equation, it is not
+        hard to see that lambda=0 implies alpha=0 when delta>1. Continuity
+        extends the result to delta=1.
         '''
         if category == 'rough': # result correct
             if self.delta >= 1:
@@ -110,6 +151,8 @@ class amp_theory:
             return ans
         
         elif category == 'accurate':
+            if self.delta >= 1:
+                return 0
             if q == 2:
                 return max(0.5 / self.delta - 0.5, 0.0)
             ans = self.alpha_of_lambda(0, q)
@@ -135,7 +178,9 @@ class amp_theory:
         the inversion of the method 'lambda_of_alpha'
         '''
         temp_func = lambda x: self.lambda_of_alpha(x, q) - lam
-        return bisect_search(temp_func, lower = self.alpha_lower_bound(category='rough', q = q) + 0.01, unit = 0.5, accuracy=1e-3)
+        return bisect_search(temp_func, lower = self.alpha_lower_bound(category='rough', q = q),
+                             unit = 0.5, lower_sign=-1, accuracy=1e-3)
+        # return bisect_search(temp_func, lower = self.alpha_lower_bound(category='rough', q = q) + 0.01, unit = 0.5, accuracy=1e-3)
     
     def __VL__(self, alpha):
         '''
@@ -255,7 +300,8 @@ def phase_trans1(delta, tol = 1e-7):
         return 1
     else:
         # use the parametrized representation of (delta, epsilon) in terms of alpha
-        tmp = lambda alpha: 2 * sps.norm.pdf(alpha) / (alpha + 2 * (sps.norm.pdf(alpha) - alpha * sps.norm.cdf( - alpha)))
+        tmp = lambda alpha: 2 * npdf(alpha) / (alpha + 2 * (npdf(alpha) -
+            alpha * ncdf( - alpha)))
         low = 0
         upp = 10
         while upp - low > tol:
@@ -265,7 +311,8 @@ def phase_trans1(delta, tol = 1e-7):
             else:
                 upp = mid
         mid = (upp + low) / 2.0
-        return 2 * (sps.norm.pdf(mid) - mid * sps.norm.cdf(-mid)) / (mid + 2 * (sps.norm.pdf(mid) - mid * sps.norm.cdf( - mid)))
+        return 2 * (npdf(mid) - mid * ncdf(-mid)) / (mid + 2 * (npdf(mid) -
+            mid * ncdf( - mid)))
 
 def phase_trans2(epsilon, tol = 1e-7):
     '''
@@ -275,7 +322,8 @@ def phase_trans2(epsilon, tol = 1e-7):
     Values:
         delta
     '''
-    tmp = lambda alpha: 2 * (sps.norm.pdf(alpha) - alpha * sps.norm.cdf(-alpha)) / (alpha + 2 * (sps.norm.pdf(alpha) - alpha * sps.norm.cdf( - alpha)))
+    tmp = lambda alpha: 2 * (npdf(alpha) - alpha * ncdf(-alpha)) / (alpha + 2
+            * (npdf(alpha) - alpha * ncdf( - alpha)))
     low = 0
     upp = 10
     while upp - low > tol:
@@ -285,7 +333,7 @@ def phase_trans2(epsilon, tol = 1e-7):
         else:
             upp = mid
     mid = (upp + low) / 2.0
-    return 2 * (1 - epsilon) * sps.norm.cdf(-mid) + epsilon
+    return 2 * (1 - epsilon) * ncdf(-mid) + epsilon
 
 def atpp_afdp(eps, alpha, tau, signal, q, s):
     '''
