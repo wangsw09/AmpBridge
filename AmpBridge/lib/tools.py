@@ -12,15 +12,15 @@ def bisect_search(fun, lower=None, upper=None, bound=None, unit=None,
     * Re-write this part in Cython.
     #
     '''
-    if (lower == None or upper == None) and bound == None and unit == None:
+    if (lower is None or upper is None) and bound is None and unit is None:
         raise ValueError('when lower or upper is missing, an estimated (upper/lower) bound or trial unit must be provided')
-    if lower == None and upper == None:
+    if lower is None and upper is None:
         raise ValueError('at least one of lower and upper should be provided')
-    if lower != None and upper != None and np.sign(fun(lower, **kwargs)) == np.sign(fun(upper, **kwargs)):
+    if lower is not None and upper is not None and np.sign(fun(lower, **kwargs)) == np.sign(fun(upper, **kwargs)):
         raise ValueError('function has same signs on lower and upper bound')
     
-    if lower == None:
-        if bound != None:
+    if lower is None:
+        if bound is not None:
             if bound >= upper:
                 raise ValueError('bound must be lower bound when lower is missing')
 
@@ -46,8 +46,8 @@ def bisect_search(fun, lower=None, upper=None, bound=None, unit=None,
                 lower_sign = np.sign(fun(lower, **kwargs))
             upper = lower + distance
     
-    if upper == None:
-        if bound != None:
+    if upper is None:
+        if bound is not None:
             if bound <= lower:
                 raise ValueError('bound must be upper bound when upper is missing')
             
@@ -67,19 +67,19 @@ def bisect_search(fun, lower=None, upper=None, bound=None, unit=None,
             gamma = 2
             distance = unit
             upper = lower + distance
-            lower_sign = np.sign(fun(lower, **kwargs))
-            upper_sign = np.sign(fun(upper, **kwargs))
+            if lower_sign is None:
+                lower_sign = np.sign(fun(lower, **kwargs))
+            if upper_sign is None:
+                upper_sign = np.sign(fun(upper, **kwargs))
             while lower_sign == upper_sign:
                 distance *= gamma
                 upper += distance
                 upper_sign = np.sign(fun(upper, **kwargs))
             lower = upper - distance
     
-    # need to consider the case if both lower and upper are provided, the need to initialize lower_sign and upper_sign
-    
-    if lower_sign == None:
+    if lower_sign is None:
         lower_sign = np.sign(fun(lower, **kwargs))
-    if upper_sign == None:
+    if upper_sign is None:
         upper_sign = np.sign(fun(upper, **kwargs))
     
     while (upper - lower) > accuracy:
