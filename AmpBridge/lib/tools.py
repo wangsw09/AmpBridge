@@ -1,13 +1,16 @@
 import sys
 import os.path
-import ctypes
 
 import numpy as np
 
 
-def bisect_search(fun, lower=None, upper=None, bound = None, unit = None, accuracy = 1e-10, non_negative=True, **kwargs): # remove 'cut = 0' argument
+def bisect_search(fun, lower=None, upper=None, bound=None, unit=None,
+                  lower_sign=None, upper_sign=None,
+                  accuracy=1e-10, **kwargs):
     '''
     fun(lower) and fun(upper) must have different signs
+    * Re-write this part in Cython.
+    #
     '''
     if (lower == None or upper == None) and bound == None and unit == None:
         raise ValueError('when lower or upper is missing, an estimated (upper/lower) bound or trial unit must be provided')
@@ -15,10 +18,7 @@ def bisect_search(fun, lower=None, upper=None, bound = None, unit = None, accura
         raise ValueError('at least one of lower and upper should be provided')
     if lower != None and upper != None and np.sign(fun(lower, **kwargs)) == np.sign(fun(upper, **kwargs)):
         raise ValueError('function has same signs on lower and upper bound')
-
-    lower_sign = None
-    upper_sign = None
-        
+    
     if lower == None:
         if bound != None:
             if bound >= upper:
@@ -53,8 +53,10 @@ def bisect_search(fun, lower=None, upper=None, bound = None, unit = None, accura
             
             distance = (bound - lower) / 2.0
             upper = lower + distance
-            lower_sign = np.sign(fun(lower, **kwargs))
-            upper_sign = np.sign(fun(upper, **kwargs))
+            if lower_sign is None:
+                lower_sign = np.sign(fun(lower, **kwargs))
+            if upper_sign is None:
+                upper_sign = np.sign(fun(upper, **kwargs))
             
             while lower_sign == upper_sign:
                 distance /= 2.0
