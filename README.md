@@ -112,11 +112,11 @@ Future work:
 * Other linear regression methods developed in recent years, including SCAD, adaptive Lasso, etc.
 
 ## <a name="update"></a>Recent Update
-08/25/17: Improve stability of `amp_theory`
+_*08/25/17*_: Improve stability of `amp_theory`
 * The calculation of optimal tuning and alpha lower bounds can now deal with very small noise level, which originally brought numerical issues. Still, however, it cannot handle noiseless cases, which is the next step I will work on.
 * Re-implement the `bisect_serach` in lib.tools to make it more adaptive. Consider implementing it in Cython in future.
 
-08/23/17: Separate the functions related to bridge regression to a separate class <bridge>. In detail, this class contains the following functions
+_*08/23/17*_: Separate the functions related to bridge regression to a separate class <bridge>. In detail, this class contains the following functions
 * `fit()`: fit bridge regression.
 * `fmse()`: fake MSE. The tau ** 2 in state evolution.
 * `mse()`: MSE.
