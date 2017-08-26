@@ -13,7 +13,7 @@
 1. Introduction
 2. Examples
 3. Details
-4. <a name="update"></a>Update
+4. [Update](#update)
 
 ## Some Examples
 
@@ -106,7 +106,7 @@ Package **AmpBridge** implements the follwoing contents
 Future work:
 * Other linear regression methods developed in recent years, including SCAD, adaptive Lasso, etc.
 
-## [Recent Update](#update)
+## <a name="update"></a>Recent Update
 * Separate the functions related to bridge regression to a separate class <bridge>. In detail, this class contains the following functions
   * `fit()`: fit bridge regression.
   * `fmse()`: fake MSE. The tau ** 2 in state evolution.
