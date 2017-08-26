@@ -1,5 +1,13 @@
 ## Package AmpBridge
 
+## Index
+1. [Introduction](#introduction)
+2. [Examples](#examples)
+3. [Details](#details)
+4. [Update](#update)
+
+
+## <a name="introduction"></a>Introduction
 1. This package provides algorithms for the following topics:
    * AMP (approximated message passing) with Lq proximal operator
    * Linear regression with Lq penalty, for any q >= 1
@@ -9,13 +17,8 @@
 2. By using Cython to accelerate critical components, the package provides a fast solutions to the above topics.
 3. This work originates from my research with Haolei Weng and Professor Arian Maleki at Columbia University.
 
-## Index
-1. Introduction
-2. Examples
-3. Details
-4. [Update](#update)
 
-## Some Examples
+## <a name="examples"></a>Some Examples
 
 1. Calculate the theoretical MSE-related quantity
 
@@ -77,7 +80,7 @@ db_arr = brg.debias(beta_arr, lam_arr, X, y)  # debiased version of array values
 lam_opt = brg.auto_tune(X, y, 11)  # find the optimal tuning
 ```
 
-## Details
+## <a name="details"></a>Details
 Package **AmpBridge** implements the follwoing contents
 
 * proximal operator
