@@ -1,4 +1,4 @@
-## Package AmpBridge
+# Package AmpBridge
 
 ## Index
 1. [Introduction](#introduction)
@@ -8,14 +8,16 @@
 
 
 ## <a name="introduction"></a>Introduction
-1. This package provides algorithms for the following topics:
-   * AMP (approximated message passing) with Lq proximal operator
-   * Linear regression with Lq penalty, for any q >= 1
-   * Related functions to the above two topics (such as tuning)
-   * Numerical calculation about several quantities on penalized linear regression, such as MSE, optimal tuned MSE, optimal tuning parameter, etc.
+This package provides classes and functions about the following topics:
+* bridge regression with Lq penalty, where q >= 1
+* AMP (approximated message passing) with Lq proximal operator
+* Related functions to the above two topics (such as tuning and MSE)
+* Numerical calculation about several quantities on penalized linear regression, such as MSE, optimal tuned MSE, optimal tuning parameter, etc.
+* Theoretical quantities related to bridge regression under normal design, including the optimal tuning etc.
 
-2. By using Cython to accelerate critical components, the package provides a fast solutions to the above topics.
-3. This work originates from my research with Haolei Weng and Professor Arian Maleki at Columbia University.
+This work originates from my research with Haolei Weng and Professor Arian Maleki at Columbia University. The relevant paper is "[Which bridge estimator is optimal for variable selection?](http://arxiv.org/abs/1705.08617)". However this package provides codes for general usage related to bridge regression, AMP and theoretical calculation about tuning and MSE in AMP/bridge regression theories.
+
+The package had a first version, which is fully written in Python. Currently I am re-implementing the package, mainly changing some structures, accelerating core parts through Cython and optimizing the algorithms. This updating is in progress. Please check [update](#update) for more details. The [examples](#examples) are compatible with the most up-to-date codes, which is something you would like to start with if you are using the code for the first time.
 
 
 ## <a name="examples"></a>Some Examples
