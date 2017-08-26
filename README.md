@@ -9,15 +9,11 @@
 2. By using Cython to accelerate critical components, the package provides a fast solutions to the above topics.
 3. This work originates from my research with Haolei Weng and Professor Arian Maleki at Columbia University.
 
-### Recent Update
-* Separate the functions related to bridge regression to a separate class <bridge>. In detail, this class contains the following functions
-  * `fit()`: fit bridge regression.
-  * `fmse()`: fake MSE. The tau ** 2 in state evolution.
-  * `mse()`: MSE.
-  * `debias()`: return the debiased version of the fitted estimator.
-  * `auto_tune()`: provide optimal tuning for the bridge regression.
-  * `__preprocess()`
-  * `__cfit()`
+## Index
+1. Introduction
+2. Examples
+3. Details
+4. <a name="update"></a>Update
 
 ## Some Examples
 
@@ -110,6 +106,14 @@ Package **AmpBridge** implements the follwoing contents
 Future work:
 * Other linear regression methods developed in recent years, including SCAD, adaptive Lasso, etc.
 
-
+## [Recent Update](#update)
+* Separate the functions related to bridge regression to a separate class <bridge>. In detail, this class contains the following functions
+  * `fit()`: fit bridge regression.
+  * `fmse()`: fake MSE. The tau ** 2 in state evolution.
+  * `mse()`: MSE.
+  * `debias()`: return the debiased version of the fitted estimator.
+  * `auto_tune()`: provide optimal tuning for the bridge regression.
+  * `__preprocess()`
+  * `__cfit()`
 
 
