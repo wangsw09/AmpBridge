@@ -3,7 +3,6 @@ import numpy as np
 cimport numpy as np
 from scipy.integrate import quad
 
-
 cdef double gaussianCdf(double x):
     cdef double a1 = 0.254829592
     cdef double a2 = -0.284496736

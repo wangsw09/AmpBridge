@@ -36,7 +36,6 @@ cdef double cmse_Lq(double alpha, double tau, double M, double epsilon, double q
     else:
         return _cmse_Lq(alpha, tau, M, epsilon, q, tol)
 
-
 # mse_derivative func
 cdef double _cmse_L1_dalpha_singleton(double x, double alpha, double tau):
     return 2.0 * tau ** 2 * alpha * (gaussianCdf(x / tau - alpha) + gaussianCdf( - x / tau - alpha)) - 2.0 * tau ** 2 * (gaussianPdf(alpha - x / tau) + gaussianPdf(alpha + x / tau) )
@@ -69,7 +68,7 @@ cdef double cmse_Lq_dalpha(double alpha, double tau, double M, double epsilon, d
 
 
 # Solve for tau
-cdef double ctau_of_alpha(double alpha, double M, double q, double epsilon, double delta, double sigma, double tol):
+cdef double ctau_of_alpha(double alpha, double M, double q, double epsilon, double delta, double sigma, double tol=1e-9):
     # assume sigma != 0
     cdef double L = sigma
     cdef double incre = sigma
@@ -91,7 +90,7 @@ cdef double ctau_of_alpha(double alpha, double M, double q, double epsilon, doub
             U = mid
     return (U + L) / 2.0
 
-cdef double coptimal_alpha(double M, double q, double epsilon, double delta, double sigma, double tol):
+cdef double coptimal_alpha(double M, double q, double epsilon, double delta, double sigma, double tol=1e-9):
     cdef double L = _calpha_lb(q, delta, tol)
     cdef double incre = 1.0
     cdef int Lsign = (cmse_Lq_dalpha(L, ctau_of_alpha(L, M, q, epsilon, delta, sigma, tol), M, epsilon, q, tol) > 0)
