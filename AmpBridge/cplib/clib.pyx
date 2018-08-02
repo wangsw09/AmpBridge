@@ -23,12 +23,10 @@ def ncdf(double x):
     cdef double y = 1.0 - ((((( a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * pow(e, -x * x)
     return 0.5 * (1.0 + sign * y)
 
-
 def npdf(double x):
     cdef double e = 2.7182818284
     cdef double c = 0.3989422804
-    return c * pow(e, - x * x * 0.5)
-
+    return c * e ** (- x ** 2 * 0.5)
 
 def prox_Lq(double u, double t, double q, double tol = 1e-9):
     '''
