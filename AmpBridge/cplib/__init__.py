@@ -1,3 +1,3 @@
 from clib import *
-import gaussian
-import proximal
+import wrapper
+
