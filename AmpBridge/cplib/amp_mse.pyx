@@ -72,10 +72,10 @@ cdef double ctau_of_alpha(double alpha, double M, double q, double epsilon, doub
     # assume sigma != 0
     cdef double L = sigma
     cdef double incre = sigma
-    cdef int Lsign = (cmse_Lq(alpha, L, M, epsilon, q, tol) / delta + sigma ** 2 > L ** 2)
+    cdef int Lsign = 1
     cdef double U = L + incre
 
-    while (cmse_Lq(alpha, U, M, epsilon, q, tol) / delta + sigma ** 2 > M ** 2) == Lsign:
+    while (cmse_Lq(alpha, U, M, epsilon, q, tol) / delta + sigma ** 2 > U ** 2) == Lsign:
         incre = incre * 2
         U = U + incre
 
@@ -93,10 +93,9 @@ cdef double ctau_of_alpha(double alpha, double M, double q, double epsilon, doub
 cdef double coptimal_alpha(double M, double q, double epsilon, double delta, double sigma, double tol=1e-9):
     cdef double L = calpha_lb(q, delta, tol)
     cdef double incre = 1.0
-    cdef int Lsign = (cmse_Lq_dalpha(L, ctau_of_alpha(L, M, q, epsilon, delta, sigma, tol), M, epsilon, q, tol) > 0)
     cdef double U = L + incre
 
-    while (cmse_Lq_dalpha(U, ctau_of_alpha(U, M, q, epsilon, delta, sigma, tol), M, epsilon, q, tol) > 0) == Lsign:
+    while cmse_Lq_dalpha(U, ctau_of_alpha(U, M, q, epsilon, delta, sigma, tol), M, epsilon, q, tol) < 0:
         incre = incre * 2
         U = U + incre
     L = U - incre
@@ -104,7 +103,7 @@ cdef double coptimal_alpha(double M, double q, double epsilon, double delta, dou
     cdef double mid = 0
     while U - L > tol:
         mid = (U + L) / 2.0
-        if (cmse_Lq_dalpha(mid, ctau_of_alpha(mid, M, q, epsilon, delta, sigma, tol), M, epsilon, q, tol) > 0) == Lsign:
+        if cmse_Lq_dalpha(mid, ctau_of_alpha(mid, M, q, epsilon, delta, sigma, tol), M, epsilon, q, tol) < 0:
             L = mid
         else:
             U = mid
@@ -121,7 +120,7 @@ cdef double _cmse_L2_dtau2_asymp(double alpha):
     return 1.0 / (1.0 + 2.0 * alpha) ** 2
 
 cdef double _cmse_Lq_dtau2_asymp(double alpha, double q, double tol):
-    return quad(_cmse_Lq_dtau2_asymp_integrand, -np.inf, np.inf, args=(alpha, q, tol))
+    return quad(_cmse_Lq_dtau2_asymp_integrand, -np.inf, np.inf, args=(alpha, q, tol))[0]
 
 cdef double calpha_lb(double q, double delta, double tol):
     cdef double L = 0

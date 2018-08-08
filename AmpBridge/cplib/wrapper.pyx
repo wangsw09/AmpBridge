@@ -13,7 +13,6 @@ def tau_of_alpha(double alpha, double M, double q, double epsilon, double delta,
 def optimal_alpha(double M, double q, double epsilon, double delta, double sigma, double tol=1e-9):
     return coptimal_alpha(M, q, epsilon, delta, sigma, tol)
 
-
 def proxLq(double x, double t, double q, double tol=1e-8):
     return cproxLq(x, t, q, tol)
 
