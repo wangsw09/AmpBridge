@@ -6,7 +6,7 @@ from AmpBridge import wrapper
 TOL = 1e-7
 def test_amp_mse_Lq():
     tol = 1e-9
-    assert abs(wrapper.mse_Lq(3, 2, 1, 0.2, 1) - 0.200732166999) < TOL
+    assert abs(wrapper.mse_Lq(3, 2, 1, 0.2, 1) - 0.20072727410105276) < TOL
     assert abs(wrapper.mse_Lq(3, 2, 1, 0.2, 1.1, tol) - 0.1988871702) < TOL
     assert abs(wrapper.mse_Lq(3, 2, 1, 0.2, 1.4, tol) - 0.1933585660) < TOL
     assert abs(wrapper.mse_Lq(3, 2, 1, 0.2, 1.5) - 0.194643622374824) < TOL
@@ -19,7 +19,7 @@ def test_amp_mse_Lq():
 
 def test_amp_mse_Lq_dalpha():
     tol = 1e-9
-    assert abs(wrapper.mse_Lq_dalpha(3, 2, 1, 0.2, 1) + 0.00340719238666) < TOL
+    assert abs(wrapper.mse_Lq_dalpha(3, 2, 1, 0.2, 1) + 0.003410135216588) < TOL
     assert abs(wrapper.mse_Lq_dalpha(3, 2, 1, 0.2, 1.1, tol) + 0.0004263065) < TOL
     assert abs(wrapper.mse_Lq_dalpha(3, 2, 1, 0.2, 1.4, tol) + 0.0049983237) < TOL
     assert abs(wrapper.mse_Lq_dalpha(3, 2, 1, 0.2, 1.5) + 0.00937996798804) < TOL
@@ -32,7 +32,7 @@ def test_amp_mse_Lq_dalpha():
 
 def test_amp_tau_of_alpha():
     tol = 1e-9
-    assert abs(wrapper.tau_of_alpha(3, 1, 1, 0.2, 0.8, 2.0, tol) - 2.0618127629) < TOL
+    assert abs(wrapper.tau_of_alpha(3, 1, 1, 0.2, 0.8, 2.0, tol) - 2.0618111747317) < TOL
     assert abs(wrapper.tau_of_alpha(3, 1, 1.1, 0.2, 0.8, 2.0, tol) - 2.06126542305) < TOL
     assert abs(wrapper.tau_of_alpha(3, 1, 1.4, 0.2, 0.8, 2.0, tol) - 2.05979374525) < TOL
     assert abs(wrapper.tau_of_alpha(3, 1, 1.5, 0.2, 0.8, 2.0, tol) - 2.06032386434) < TOL
@@ -45,7 +45,7 @@ def test_amp_tau_of_alpha():
 
 def test_amp_optimal_alpha():
     tol = 1e-11
-    assert abs(wrapper.optimal_alpha(1, 1, 0.2, 0.8, 2.0, tol) - 4.14364974842) < TOL
+    assert abs(wrapper.optimal_alpha(1, 1, 0.2, 0.8, 2.0, tol) - 4.1607070617974) < TOL
     assert abs(wrapper.optimal_alpha(1, 1.1, 0.2, 0.8, 2.0, tol) - 3.10944362525) < TOL
     assert abs(wrapper.optimal_alpha(1, 1.4, 0.2, 0.8, 2.0, tol) - 3.55112701078) < TOL
     assert abs(wrapper.optimal_alpha(1, 1.5, 0.2, 0.8, 2.0, tol) - 4.06355141695) < TOL
@@ -55,3 +55,4 @@ def test_amp_optimal_alpha():
     assert abs(wrapper.optimal_alpha(1, 2.1, 0.2, 0.8, 2.0, tol) - 13.2950014532) < TOL
     assert abs(wrapper.optimal_alpha(1, 2.9, 0.2, 0.8, 2.0, tol) - 100.617867224) < TOL
     assert abs(wrapper.optimal_alpha(1, 4.0, 0.2, 0.8, 2.0, tol) - 2225.41877958) < TOL
+
