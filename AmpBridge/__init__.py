@@ -1,6 +1,5 @@
 from .AMPtheory import *
 from .lib import *
 from .linear_model import *
-from .cplib import *
+from .cscalar import *
 
-import data_gen

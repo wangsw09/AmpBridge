@@ -8,7 +8,7 @@ import sklearn.linear_model as skll
 
 from .lib.prox_func import *
 from .lib.tools import *
-from .cplib import *
+from .cscalar import *
 
 
 # define a class: linear model

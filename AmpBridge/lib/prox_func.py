@@ -1,9 +1,10 @@
+from math import sqrt, pi, exp
 import sys
 import numpy as np
 import ctypes
 from .tools import *
 from .base_class import *
-from ..cplib import *
+from ..cscalar import *
 
 
 eta = np.vectorize(prox_Lq)
