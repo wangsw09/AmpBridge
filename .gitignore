@@ -4,4 +4,4 @@
 *.[oa]
 *.ipynb
 stats_*
-
+.cache/
