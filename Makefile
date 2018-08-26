@@ -1,7 +1,7 @@
 .PHONY: clean
 
 clean:
-	rm -rf AmpBridge/cplib/*.c build AmpBridge/cplib/*.so AmpBridge/cplib/*~ AmpBridge/cplib/.*~ AmpBridge/cplib/*.pyc
+	rm -rf AmpBridge/cscalar/*.c build AmpBridge/cscalar/*.so AmpBridge/cscalar/*~ AmpBridge/cscalar/.*~ AmpBridge/cscalar/*.pyc
 
 compile:
 	python setup.py build_ext --inplace
