@@ -1,6 +1,8 @@
 import numpy as np
 cimport numpy as np
 
+# from ..cscalar import *
+
 cdef np.ndarray[dtype=np.float64_t, ndim=1] ccBridgeL1(
         np.ndarray[dtype=np.float64_t, ndim=2] XTX,
         np.ndarray[dtype=np.float64_t, ndim=1] XTy,
