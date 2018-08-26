@@ -1049,7 +1049,7 @@ typedef npy_clongdouble __pyx_t_5numpy_clongdouble_t;
  */
 typedef npy_cdouble __pyx_t_5numpy_complex_t;
 
-/* "AmpBridge/cscalar/gaussian.pyx":31
+/* "AmpBridge/cscalar/gaussian.pyx":16
  *     return tgamma((q + 1.0) / 2.0) * (2 ** (q / 2.0)) / sqrt(M_PI)
  * 
  * def gaussianExpectation(f):             # <<<<<<<<<<<<<<
@@ -1663,188 +1663,41 @@ static PyObject *__pyx_codeobj__13;
  * from scipy.integrate import quad
  * 
  * cdef double gaussianCdf(double x):             # <<<<<<<<<<<<<<
- *     cdef double a1 = 0.254829592
- *     cdef double a2 = -0.284496736
+ *     return 0.5 + 0.5 * erf(x * M_SQRT1_2)
+ * 
  */
 
 static double __pyx_f_9AmpBridge_7cscalar_8gaussian_gaussianCdf(double __pyx_v_x) {
-  double __pyx_v_a1;
-  double __pyx_v_a2;
-  double __pyx_v_a3;
-  double __pyx_v_a4;
-  double __pyx_v_a5;
-  double __pyx_v_p;
-  double __pyx_v_e;
-  int __pyx_v_sign;
-  double __pyx_v_t;
-  double __pyx_v_y;
   double __pyx_r;
   __Pyx_RefNannyDeclarations
-  int __pyx_t_1;
-  double __pyx_t_2;
   __Pyx_RefNannySetupContext("gaussianCdf", 0);
 
   /* "AmpBridge/cscalar/gaussian.pyx":7
  * 
  * cdef double gaussianCdf(double x):
- *     cdef double a1 = 0.254829592             # <<<<<<<<<<<<<<
- *     cdef double a2 = -0.284496736
- *     cdef double a3 = 1.421413741
- */
-  __pyx_v_a1 = 0.254829592;
-
-  /* "AmpBridge/cscalar/gaussian.pyx":8
- * cdef double gaussianCdf(double x):
- *     cdef double a1 = 0.254829592
- *     cdef double a2 = -0.284496736             # <<<<<<<<<<<<<<
- *     cdef double a3 = 1.421413741
- *     cdef double a4 = -1.453152027
- */
-  __pyx_v_a2 = -0.284496736;
-
-  /* "AmpBridge/cscalar/gaussian.pyx":9
- *     cdef double a1 = 0.254829592
- *     cdef double a2 = -0.284496736
- *     cdef double a3 = 1.421413741             # <<<<<<<<<<<<<<
- *     cdef double a4 = -1.453152027
- *     cdef double a5 = 1.061405429
- */
-  __pyx_v_a3 = 1.421413741;
-
-  /* "AmpBridge/cscalar/gaussian.pyx":10
- *     cdef double a2 = -0.284496736
- *     cdef double a3 = 1.421413741
- *     cdef double a4 = -1.453152027             # <<<<<<<<<<<<<<
- *     cdef double a5 = 1.061405429
- *     cdef double p = 0.3275911
- */
-  __pyx_v_a4 = -1.453152027;
-
-  /* "AmpBridge/cscalar/gaussian.pyx":11
- *     cdef double a3 = 1.421413741
- *     cdef double a4 = -1.453152027
- *     cdef double a5 = 1.061405429             # <<<<<<<<<<<<<<
- *     cdef double p = 0.3275911
- *     cdef double e = 2.71828182846
- */
-  __pyx_v_a5 = 1.061405429;
-
-  /* "AmpBridge/cscalar/gaussian.pyx":12
- *     cdef double a4 = -1.453152027
- *     cdef double a5 = 1.061405429
- *     cdef double p = 0.3275911             # <<<<<<<<<<<<<<
- *     cdef double e = 2.71828182846
- * 
- */
-  __pyx_v_p = 0.3275911;
-
-  /* "AmpBridge/cscalar/gaussian.pyx":13
- *     cdef double a5 = 1.061405429
- *     cdef double p = 0.3275911
- *     cdef double e = 2.71828182846             # <<<<<<<<<<<<<<
- * 
- *     cdef int sign = 1
- */
-  __pyx_v_e = 2.71828182846;
-
-  /* "AmpBridge/cscalar/gaussian.pyx":15
- *     cdef double e = 2.71828182846
- * 
- *     cdef int sign = 1             # <<<<<<<<<<<<<<
- *     if x < 0:
- *         sign = -1
- */
-  __pyx_v_sign = 1;
-
-  /* "AmpBridge/cscalar/gaussian.pyx":16
- * 
- *     cdef int sign = 1
- *     if x < 0:             # <<<<<<<<<<<<<<
- *         sign = -1
- *     x = abs(x) * 0.70710678118
- */
-  __pyx_t_1 = ((__pyx_v_x < 0.0) != 0);
-  if (__pyx_t_1) {
-
-    /* "AmpBridge/cscalar/gaussian.pyx":17
- *     cdef int sign = 1
- *     if x < 0:
- *         sign = -1             # <<<<<<<<<<<<<<
- *     x = abs(x) * 0.70710678118
- * 
- */
-    __pyx_v_sign = -1;
-
-    /* "AmpBridge/cscalar/gaussian.pyx":16
- * 
- *     cdef int sign = 1
- *     if x < 0:             # <<<<<<<<<<<<<<
- *         sign = -1
- *     x = abs(x) * 0.70710678118
- */
-  }
-
-  /* "AmpBridge/cscalar/gaussian.pyx":18
- *     if x < 0:
- *         sign = -1
- *     x = abs(x) * 0.70710678118             # <<<<<<<<<<<<<<
- * 
- *     cdef double t = 1.0 / (1.0 + p * x)
- */
-  __pyx_v_x = (fabs(__pyx_v_x) * 0.70710678118);
-
-  /* "AmpBridge/cscalar/gaussian.pyx":20
- *     x = abs(x) * 0.70710678118
- * 
- *     cdef double t = 1.0 / (1.0 + p * x)             # <<<<<<<<<<<<<<
- *     cdef double y = 1.0 - ((((( a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * e ** (-x * x)
- *     return 0.5 * (1.0 + sign * y)
- */
-  __pyx_t_2 = (1.0 + (__pyx_v_p * __pyx_v_x));
-  if (unlikely(__pyx_t_2 == 0)) {
-    PyErr_SetString(PyExc_ZeroDivisionError, "float division");
-    __PYX_ERR(0, 20, __pyx_L1_error)
-  }
-  __pyx_v_t = (1.0 / __pyx_t_2);
-
-  /* "AmpBridge/cscalar/gaussian.pyx":21
- * 
- *     cdef double t = 1.0 / (1.0 + p * x)
- *     cdef double y = 1.0 - ((((( a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * e ** (-x * x)             # <<<<<<<<<<<<<<
- *     return 0.5 * (1.0 + sign * y)
- * 
- */
-  __pyx_v_y = (1.0 - ((((((((((__pyx_v_a5 * __pyx_v_t) + __pyx_v_a4) * __pyx_v_t) + __pyx_v_a3) * __pyx_v_t) + __pyx_v_a2) * __pyx_v_t) + __pyx_v_a1) * __pyx_v_t) * pow(__pyx_v_e, ((-__pyx_v_x) * __pyx_v_x))));
-
-  /* "AmpBridge/cscalar/gaussian.pyx":22
- *     cdef double t = 1.0 / (1.0 + p * x)
- *     cdef double y = 1.0 - ((((( a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * e ** (-x * x)
- *     return 0.5 * (1.0 + sign * y)             # <<<<<<<<<<<<<<
+ *     return 0.5 + 0.5 * erf(x * M_SQRT1_2)             # <<<<<<<<<<<<<<
  * 
  * cdef double gaussianPdf(double x):
  */
-  __pyx_r = (0.5 * (1.0 + (__pyx_v_sign * __pyx_v_y)));
+  __pyx_r = (0.5 + (0.5 * erf((__pyx_v_x * M_SQRT1_2))));
   goto __pyx_L0;
 
   /* "AmpBridge/cscalar/gaussian.pyx":6
  * from scipy.integrate import quad
  * 
  * cdef double gaussianCdf(double x):             # <<<<<<<<<<<<<<
- *     cdef double a1 = 0.254829592
- *     cdef double a2 = -0.284496736
+ *     return 0.5 + 0.5 * erf(x * M_SQRT1_2)
+ * 
  */
 
   /* function exit code */
-  __pyx_L1_error:;
-  __Pyx_WriteUnraisable("AmpBridge.cscalar.gaussian.gaussianCdf", __pyx_clineno, __pyx_lineno, __pyx_filename, 1, 0);
-  __pyx_r = 0;
   __pyx_L0:;
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-/* "AmpBridge/cscalar/gaussian.pyx":24
- *     return 0.5 * (1.0 + sign * y)
+/* "AmpBridge/cscalar/gaussian.pyx":9
+ *     return 0.5 + 0.5 * erf(x * M_SQRT1_2)
  * 
  * cdef double gaussianPdf(double x):             # <<<<<<<<<<<<<<
  *     cdef double c = 0.39894228040
@@ -1857,7 +1710,7 @@ static double __pyx_f_9AmpBridge_7cscalar_8gaussian_gaussianPdf(double __pyx_v_x
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("gaussianPdf", 0);
 
-  /* "AmpBridge/cscalar/gaussian.pyx":25
+  /* "AmpBridge/cscalar/gaussian.pyx":10
  * 
  * cdef double gaussianPdf(double x):
  *     cdef double c = 0.39894228040             # <<<<<<<<<<<<<<
@@ -1866,7 +1719,7 @@ static double __pyx_f_9AmpBridge_7cscalar_8gaussian_gaussianPdf(double __pyx_v_x
  */
   __pyx_v_c = 0.39894228040;
 
-  /* "AmpBridge/cscalar/gaussian.pyx":26
+  /* "AmpBridge/cscalar/gaussian.pyx":11
  * cdef double gaussianPdf(double x):
  *     cdef double c = 0.39894228040
  *     return c * M_E ** (- x ** 2 * 0.5)             # <<<<<<<<<<<<<<
@@ -1876,8 +1729,8 @@ static double __pyx_f_9AmpBridge_7cscalar_8gaussian_gaussianPdf(double __pyx_v_x
   __pyx_r = (__pyx_v_c * pow(M_E, ((-pow(__pyx_v_x, 2.0)) * 0.5)));
   goto __pyx_L0;
 
-  /* "AmpBridge/cscalar/gaussian.pyx":24
- *     return 0.5 * (1.0 + sign * y)
+  /* "AmpBridge/cscalar/gaussian.pyx":9
+ *     return 0.5 + 0.5 * erf(x * M_SQRT1_2)
  * 
  * cdef double gaussianPdf(double x):             # <<<<<<<<<<<<<<
  *     cdef double c = 0.39894228040
@@ -1890,7 +1743,7 @@ static double __pyx_f_9AmpBridge_7cscalar_8gaussian_gaussianPdf(double __pyx_v_x
   return __pyx_r;
 }
 
-/* "AmpBridge/cscalar/gaussian.pyx":28
+/* "AmpBridge/cscalar/gaussian.pyx":13
  *     return c * M_E ** (- x ** 2 * 0.5)
  * 
  * cdef double gaussianMoment(double q):             # <<<<<<<<<<<<<<
@@ -1905,7 +1758,7 @@ static double __pyx_f_9AmpBridge_7cscalar_8gaussian_gaussianMoment(double __pyx_
   double __pyx_t_2;
   __Pyx_RefNannySetupContext("gaussianMoment", 0);
 
-  /* "AmpBridge/cscalar/gaussian.pyx":29
+  /* "AmpBridge/cscalar/gaussian.pyx":14
  * 
  * cdef double gaussianMoment(double q):
  *     return tgamma((q + 1.0) / 2.0) * (2 ** (q / 2.0)) / sqrt(M_PI)             # <<<<<<<<<<<<<<
@@ -1916,12 +1769,12 @@ static double __pyx_f_9AmpBridge_7cscalar_8gaussian_gaussianMoment(double __pyx_
   __pyx_t_2 = sqrt(M_PI);
   if (unlikely(__pyx_t_2 == 0)) {
     PyErr_SetString(PyExc_ZeroDivisionError, "float division");
-    __PYX_ERR(0, 29, __pyx_L1_error)
+    __PYX_ERR(0, 14, __pyx_L1_error)
   }
   __pyx_r = (__pyx_t_1 / __pyx_t_2);
   goto __pyx_L0;
 
-  /* "AmpBridge/cscalar/gaussian.pyx":28
+  /* "AmpBridge/cscalar/gaussian.pyx":13
  *     return c * M_E ** (- x ** 2 * 0.5)
  * 
  * cdef double gaussianMoment(double q):             # <<<<<<<<<<<<<<
@@ -1938,7 +1791,7 @@ static double __pyx_f_9AmpBridge_7cscalar_8gaussian_gaussianMoment(double __pyx_
   return __pyx_r;
 }
 
-/* "AmpBridge/cscalar/gaussian.pyx":31
+/* "AmpBridge/cscalar/gaussian.pyx":16
  *     return tgamma((q + 1.0) / 2.0) * (2 ** (q / 2.0)) / sqrt(M_PI)
  * 
  * def gaussianExpectation(f):             # <<<<<<<<<<<<<<
@@ -1960,7 +1813,7 @@ static PyObject *__pyx_pw_9AmpBridge_7cscalar_8gaussian_1gaussianExpectation(PyO
   return __pyx_r;
 }
 
-/* "AmpBridge/cscalar/gaussian.pyx":32
+/* "AmpBridge/cscalar/gaussian.pyx":17
  * 
  * def gaussianExpectation(f):
  *     def tmp(x):             # <<<<<<<<<<<<<<
@@ -1996,7 +1849,7 @@ static PyObject *__pyx_pf_9AmpBridge_7cscalar_8gaussian_19gaussianExpectation_tm
   __pyx_outer_scope = (struct __pyx_obj_9AmpBridge_7cscalar_8gaussian___pyx_scope_struct__gaussianExpectation *) __Pyx_CyFunction_GetClosure(__pyx_self);
   __pyx_cur_scope = __pyx_outer_scope;
 
-  /* "AmpBridge/cscalar/gaussian.pyx":33
+  /* "AmpBridge/cscalar/gaussian.pyx":18
  * def gaussianExpectation(f):
  *     def tmp(x):
  *         return f(x) * gaussianPdf(x)             # <<<<<<<<<<<<<<
@@ -2004,7 +1857,7 @@ static PyObject *__pyx_pf_9AmpBridge_7cscalar_8gaussian_19gaussianExpectation_tm
  * 
  */
   __Pyx_XDECREF(__pyx_r);
-  if (unlikely(!__pyx_cur_scope->__pyx_v_f)) { __Pyx_RaiseClosureNameError("f"); __PYX_ERR(0, 33, __pyx_L1_error) }
+  if (unlikely(!__pyx_cur_scope->__pyx_v_f)) { __Pyx_RaiseClosureNameError("f"); __PYX_ERR(0, 18, __pyx_L1_error) }
   __Pyx_INCREF(__pyx_cur_scope->__pyx_v_f);
   __pyx_t_2 = __pyx_cur_scope->__pyx_v_f; __pyx_t_3 = NULL;
   if (CYTHON_UNPACK_METHODS && unlikely(PyMethod_Check(__pyx_t_2))) {
@@ -2017,13 +1870,13 @@ static PyObject *__pyx_pf_9AmpBridge_7cscalar_8gaussian_19gaussianExpectation_tm
     }
   }
   if (!__pyx_t_3) {
-    __pyx_t_1 = __Pyx_PyObject_CallOneArg(__pyx_t_2, __pyx_v_x); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 33, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyObject_CallOneArg(__pyx_t_2, __pyx_v_x); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 18, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
   } else {
     #if CYTHON_FAST_PYCALL
     if (PyFunction_Check(__pyx_t_2)) {
       PyObject *__pyx_temp[2] = {__pyx_t_3, __pyx_v_x};
-      __pyx_t_1 = __Pyx_PyFunction_FastCall(__pyx_t_2, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 33, __pyx_L1_error)
+      __pyx_t_1 = __Pyx_PyFunction_FastCall(__pyx_t_2, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 18, __pyx_L1_error)
       __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
       __Pyx_GOTREF(__pyx_t_1);
     } else
@@ -2031,28 +1884,28 @@ static PyObject *__pyx_pf_9AmpBridge_7cscalar_8gaussian_19gaussianExpectation_tm
     #if CYTHON_FAST_PYCCALL
     if (__Pyx_PyFastCFunction_Check(__pyx_t_2)) {
       PyObject *__pyx_temp[2] = {__pyx_t_3, __pyx_v_x};
-      __pyx_t_1 = __Pyx_PyCFunction_FastCall(__pyx_t_2, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 33, __pyx_L1_error)
+      __pyx_t_1 = __Pyx_PyCFunction_FastCall(__pyx_t_2, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 18, __pyx_L1_error)
       __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
       __Pyx_GOTREF(__pyx_t_1);
     } else
     #endif
     {
-      __pyx_t_4 = PyTuple_New(1+1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 33, __pyx_L1_error)
+      __pyx_t_4 = PyTuple_New(1+1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 18, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_4);
       __Pyx_GIVEREF(__pyx_t_3); PyTuple_SET_ITEM(__pyx_t_4, 0, __pyx_t_3); __pyx_t_3 = NULL;
       __Pyx_INCREF(__pyx_v_x);
       __Pyx_GIVEREF(__pyx_v_x);
       PyTuple_SET_ITEM(__pyx_t_4, 0+1, __pyx_v_x);
-      __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_4, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 33, __pyx_L1_error)
+      __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_4, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 18, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_1);
       __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
     }
   }
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __pyx_t_5 = __pyx_PyFloat_AsDouble(__pyx_v_x); if (unlikely((__pyx_t_5 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 33, __pyx_L1_error)
-  __pyx_t_2 = PyFloat_FromDouble(__pyx_f_9AmpBridge_7cscalar_8gaussian_gaussianPdf(__pyx_t_5)); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 33, __pyx_L1_error)
+  __pyx_t_5 = __pyx_PyFloat_AsDouble(__pyx_v_x); if (unlikely((__pyx_t_5 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 18, __pyx_L1_error)
+  __pyx_t_2 = PyFloat_FromDouble(__pyx_f_9AmpBridge_7cscalar_8gaussian_gaussianPdf(__pyx_t_5)); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 18, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_4 = PyNumber_Multiply(__pyx_t_1, __pyx_t_2); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 33, __pyx_L1_error)
+  __pyx_t_4 = PyNumber_Multiply(__pyx_t_1, __pyx_t_2); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 18, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
@@ -2060,7 +1913,7 @@ static PyObject *__pyx_pf_9AmpBridge_7cscalar_8gaussian_19gaussianExpectation_tm
   __pyx_t_4 = 0;
   goto __pyx_L0;
 
-  /* "AmpBridge/cscalar/gaussian.pyx":32
+  /* "AmpBridge/cscalar/gaussian.pyx":17
  * 
  * def gaussianExpectation(f):
  *     def tmp(x):             # <<<<<<<<<<<<<<
@@ -2082,7 +1935,7 @@ static PyObject *__pyx_pf_9AmpBridge_7cscalar_8gaussian_19gaussianExpectation_tm
   return __pyx_r;
 }
 
-/* "AmpBridge/cscalar/gaussian.pyx":31
+/* "AmpBridge/cscalar/gaussian.pyx":16
  *     return tgamma((q + 1.0) / 2.0) * (2 ** (q / 2.0)) / sqrt(M_PI)
  * 
  * def gaussianExpectation(f):             # <<<<<<<<<<<<<<
@@ -2107,7 +1960,7 @@ static PyObject *__pyx_pf_9AmpBridge_7cscalar_8gaussian_gaussianExpectation(CYTH
   if (unlikely(!__pyx_cur_scope)) {
     __pyx_cur_scope = ((struct __pyx_obj_9AmpBridge_7cscalar_8gaussian___pyx_scope_struct__gaussianExpectation *)Py_None);
     __Pyx_INCREF(Py_None);
-    __PYX_ERR(0, 31, __pyx_L1_error)
+    __PYX_ERR(0, 16, __pyx_L1_error)
   } else {
     __Pyx_GOTREF(__pyx_cur_scope);
   }
@@ -2115,19 +1968,19 @@ static PyObject *__pyx_pf_9AmpBridge_7cscalar_8gaussian_gaussianExpectation(CYTH
   __Pyx_INCREF(__pyx_cur_scope->__pyx_v_f);
   __Pyx_GIVEREF(__pyx_cur_scope->__pyx_v_f);
 
-  /* "AmpBridge/cscalar/gaussian.pyx":32
+  /* "AmpBridge/cscalar/gaussian.pyx":17
  * 
  * def gaussianExpectation(f):
  *     def tmp(x):             # <<<<<<<<<<<<<<
  *         return f(x) * gaussianPdf(x)
  *     return quad(tmp, -np.inf, np.inf)[0]
  */
-  __pyx_t_1 = __Pyx_CyFunction_NewEx(&__pyx_mdef_9AmpBridge_7cscalar_8gaussian_19gaussianExpectation_1tmp, 0, __pyx_n_s_gaussianExpectation_locals_tmp, ((PyObject*)__pyx_cur_scope), __pyx_n_s_AmpBridge_cscalar_gaussian, __pyx_d, ((PyObject *)__pyx_codeobj__2)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 32, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_CyFunction_NewEx(&__pyx_mdef_9AmpBridge_7cscalar_8gaussian_19gaussianExpectation_1tmp, 0, __pyx_n_s_gaussianExpectation_locals_tmp, ((PyObject*)__pyx_cur_scope), __pyx_n_s_AmpBridge_cscalar_gaussian, __pyx_d, ((PyObject *)__pyx_codeobj__2)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 17, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_v_tmp = __pyx_t_1;
   __pyx_t_1 = 0;
 
-  /* "AmpBridge/cscalar/gaussian.pyx":34
+  /* "AmpBridge/cscalar/gaussian.pyx":19
  *     def tmp(x):
  *         return f(x) * gaussianPdf(x)
  *     return quad(tmp, -np.inf, np.inf)[0]             # <<<<<<<<<<<<<<
@@ -2135,19 +1988,19 @@ static PyObject *__pyx_pf_9AmpBridge_7cscalar_8gaussian_gaussianExpectation(CYTH
  * # cdef double ccgaussianExpectation(integrand f):
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_quad); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 34, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_quad); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 19, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_3 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 34, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 19, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
-  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_inf); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 34, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_inf); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 19, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-  __pyx_t_3 = PyNumber_Negative(__pyx_t_4); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 34, __pyx_L1_error)
+  __pyx_t_3 = PyNumber_Negative(__pyx_t_4); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 19, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-  __pyx_t_4 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 34, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 19, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_inf); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 34, __pyx_L1_error)
+  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_inf); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 19, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
   __pyx_t_4 = NULL;
@@ -2165,7 +2018,7 @@ static PyObject *__pyx_pf_9AmpBridge_7cscalar_8gaussian_gaussianExpectation(CYTH
   #if CYTHON_FAST_PYCALL
   if (PyFunction_Check(__pyx_t_2)) {
     PyObject *__pyx_temp[4] = {__pyx_t_4, __pyx_v_tmp, __pyx_t_3, __pyx_t_5};
-    __pyx_t_1 = __Pyx_PyFunction_FastCall(__pyx_t_2, __pyx_temp+1-__pyx_t_6, 3+__pyx_t_6); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 34, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyFunction_FastCall(__pyx_t_2, __pyx_temp+1-__pyx_t_6, 3+__pyx_t_6); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 19, __pyx_L1_error)
     __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
@@ -2175,7 +2028,7 @@ static PyObject *__pyx_pf_9AmpBridge_7cscalar_8gaussian_gaussianExpectation(CYTH
   #if CYTHON_FAST_PYCCALL
   if (__Pyx_PyFastCFunction_Check(__pyx_t_2)) {
     PyObject *__pyx_temp[4] = {__pyx_t_4, __pyx_v_tmp, __pyx_t_3, __pyx_t_5};
-    __pyx_t_1 = __Pyx_PyCFunction_FastCall(__pyx_t_2, __pyx_temp+1-__pyx_t_6, 3+__pyx_t_6); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 34, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyCFunction_FastCall(__pyx_t_2, __pyx_temp+1-__pyx_t_6, 3+__pyx_t_6); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 19, __pyx_L1_error)
     __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
@@ -2183,7 +2036,7 @@ static PyObject *__pyx_pf_9AmpBridge_7cscalar_8gaussian_gaussianExpectation(CYTH
   } else
   #endif
   {
-    __pyx_t_7 = PyTuple_New(3+__pyx_t_6); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 34, __pyx_L1_error)
+    __pyx_t_7 = PyTuple_New(3+__pyx_t_6); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 19, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_7);
     if (__pyx_t_4) {
       __Pyx_GIVEREF(__pyx_t_4); PyTuple_SET_ITEM(__pyx_t_7, 0, __pyx_t_4); __pyx_t_4 = NULL;
@@ -2197,19 +2050,19 @@ static PyObject *__pyx_pf_9AmpBridge_7cscalar_8gaussian_gaussianExpectation(CYTH
     PyTuple_SET_ITEM(__pyx_t_7, 2+__pyx_t_6, __pyx_t_5);
     __pyx_t_3 = 0;
     __pyx_t_5 = 0;
-    __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_7, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 34, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_7, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 19, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
   }
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __pyx_t_2 = __Pyx_GetItemInt(__pyx_t_1, 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 34, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_GetItemInt(__pyx_t_1, 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 19, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __pyx_r = __pyx_t_2;
   __pyx_t_2 = 0;
   goto __pyx_L0;
 
-  /* "AmpBridge/cscalar/gaussian.pyx":31
+  /* "AmpBridge/cscalar/gaussian.pyx":16
  *     return tgamma((q + 1.0) / 2.0) * (2 ** (q / 2.0)) / sqrt(M_PI)
  * 
  * def gaussianExpectation(f):             # <<<<<<<<<<<<<<
@@ -4882,17 +4735,17 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__Pyx_InitCachedConstants", 0);
 
-  /* "AmpBridge/cscalar/gaussian.pyx":32
+  /* "AmpBridge/cscalar/gaussian.pyx":17
  * 
  * def gaussianExpectation(f):
  *     def tmp(x):             # <<<<<<<<<<<<<<
  *         return f(x) * gaussianPdf(x)
  *     return quad(tmp, -np.inf, np.inf)[0]
  */
-  __pyx_tuple_ = PyTuple_Pack(1, __pyx_n_s_x); if (unlikely(!__pyx_tuple_)) __PYX_ERR(0, 32, __pyx_L1_error)
+  __pyx_tuple_ = PyTuple_Pack(1, __pyx_n_s_x); if (unlikely(!__pyx_tuple_)) __PYX_ERR(0, 17, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple_);
   __Pyx_GIVEREF(__pyx_tuple_);
-  __pyx_codeobj__2 = (PyObject*)__Pyx_PyCode_New(1, 0, 1, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple_, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_AmpBridge_cscalar_gaussian_pyx, __pyx_n_s_tmp, 32, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__2)) __PYX_ERR(0, 32, __pyx_L1_error)
+  __pyx_codeobj__2 = (PyObject*)__Pyx_PyCode_New(1, 0, 1, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple_, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_AmpBridge_cscalar_gaussian_pyx, __pyx_n_s_tmp, 17, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__2)) __PYX_ERR(0, 17, __pyx_L1_error)
 
   /* "../../anaconda2/lib/python2.7/site-packages/Cython/Includes/numpy/__init__.pxd":229
  *             if ((flags & pybuf.PyBUF_C_CONTIGUOUS == pybuf.PyBUF_C_CONTIGUOUS)
@@ -4991,17 +4844,17 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__11);
   __Pyx_GIVEREF(__pyx_tuple__11);
 
-  /* "AmpBridge/cscalar/gaussian.pyx":31
+  /* "AmpBridge/cscalar/gaussian.pyx":16
  *     return tgamma((q + 1.0) / 2.0) * (2 ** (q / 2.0)) / sqrt(M_PI)
  * 
  * def gaussianExpectation(f):             # <<<<<<<<<<<<<<
  *     def tmp(x):
  *         return f(x) * gaussianPdf(x)
  */
-  __pyx_tuple__12 = PyTuple_Pack(3, __pyx_n_s_f, __pyx_n_s_tmp, __pyx_n_s_tmp); if (unlikely(!__pyx_tuple__12)) __PYX_ERR(0, 31, __pyx_L1_error)
+  __pyx_tuple__12 = PyTuple_Pack(3, __pyx_n_s_f, __pyx_n_s_tmp, __pyx_n_s_tmp); if (unlikely(!__pyx_tuple__12)) __PYX_ERR(0, 16, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__12);
   __Pyx_GIVEREF(__pyx_tuple__12);
-  __pyx_codeobj__13 = (PyObject*)__Pyx_PyCode_New(1, 0, 3, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__12, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_AmpBridge_cscalar_gaussian_pyx, __pyx_n_s_gaussianExpectation, 31, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__13)) __PYX_ERR(0, 31, __pyx_L1_error)
+  __pyx_codeobj__13 = (PyObject*)__Pyx_PyCode_New(1, 0, 3, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__12, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_AmpBridge_cscalar_gaussian_pyx, __pyx_n_s_gaussianExpectation, 16, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__13)) __PYX_ERR(0, 16, __pyx_L1_error)
   __Pyx_RefNannyFinishContext();
   return 0;
   __pyx_L1_error:;
@@ -5058,7 +4911,7 @@ static int __Pyx_modinit_type_init_code(void) {
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__Pyx_modinit_type_init_code", 0);
   /*--- Type init code ---*/
-  if (PyType_Ready(&__pyx_type_9AmpBridge_7cscalar_8gaussian___pyx_scope_struct__gaussianExpectation) < 0) __PYX_ERR(0, 31, __pyx_L1_error)
+  if (PyType_Ready(&__pyx_type_9AmpBridge_7cscalar_8gaussian___pyx_scope_struct__gaussianExpectation) < 0) __PYX_ERR(0, 16, __pyx_L1_error)
   __pyx_type_9AmpBridge_7cscalar_8gaussian___pyx_scope_struct__gaussianExpectation.tp_print = 0;
   if ((CYTHON_USE_TYPE_SLOTS && CYTHON_USE_PYTYPE_LOOKUP) && likely(!__pyx_type_9AmpBridge_7cscalar_8gaussian___pyx_scope_struct__gaussianExpectation.tp_dictoffset && __pyx_type_9AmpBridge_7cscalar_8gaussian___pyx_scope_struct__gaussianExpectation.tp_getattro == PyObject_GenericGetAttr)) {
     __pyx_type_9AmpBridge_7cscalar_8gaussian___pyx_scope_struct__gaussianExpectation.tp_getattro = __Pyx_PyObject_GenericGetAttrNoDict;
@@ -5285,7 +5138,7 @@ if (!__Pyx_RefNanny) {
   #endif
 
   /* "AmpBridge/cscalar/gaussian.pyx":2
- * from libc.math cimport sqrt, tgamma, M_E, M_PI
+ * from libc.math cimport sqrt, tgamma, erf, M_E, M_PI, M_SQRT1_2
  * import numpy as np             # <<<<<<<<<<<<<<
  * cimport numpy as np
  * from scipy.integrate import quad
@@ -5316,20 +5169,20 @@ if (!__Pyx_RefNanny) {
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "AmpBridge/cscalar/gaussian.pyx":31
+  /* "AmpBridge/cscalar/gaussian.pyx":16
  *     return tgamma((q + 1.0) / 2.0) * (2 ** (q / 2.0)) / sqrt(M_PI)
  * 
  * def gaussianExpectation(f):             # <<<<<<<<<<<<<<
  *     def tmp(x):
  *         return f(x) * gaussianPdf(x)
  */
-  __pyx_t_2 = PyCFunction_NewEx(&__pyx_mdef_9AmpBridge_7cscalar_8gaussian_1gaussianExpectation, NULL, __pyx_n_s_AmpBridge_cscalar_gaussian); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 31, __pyx_L1_error)
+  __pyx_t_2 = PyCFunction_NewEx(&__pyx_mdef_9AmpBridge_7cscalar_8gaussian_1gaussianExpectation, NULL, __pyx_n_s_AmpBridge_cscalar_gaussian); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 16, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_gaussianExpectation, __pyx_t_2) < 0) __PYX_ERR(0, 31, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_gaussianExpectation, __pyx_t_2) < 0) __PYX_ERR(0, 16, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
   /* "AmpBridge/cscalar/gaussian.pyx":1
- * from libc.math cimport sqrt, tgamma, M_E, M_PI             # <<<<<<<<<<<<<<
+ * from libc.math cimport sqrt, tgamma, erf, M_E, M_PI, M_SQRT1_2             # <<<<<<<<<<<<<<
  * import numpy as np
  * cimport numpy as np
  */
