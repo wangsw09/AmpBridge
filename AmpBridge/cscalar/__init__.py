@@ -1,3 +1,3 @@
 from clib import *
-import wrapper
+from wrapper import *
 
