@@ -15,6 +15,9 @@ The next steps involve the following three main stages:
 2. Merge the preivous optimized Amp c code into the current package;
 3. Merge the new Lq regression part of c code into the current package.
 
+Things to pay attention to:
+1. The calculation of XTX is not memory-friendly. We may want to directly calculate its multiplication with a vector;
+
 The structure of the package:
 
 AmpBridge/
