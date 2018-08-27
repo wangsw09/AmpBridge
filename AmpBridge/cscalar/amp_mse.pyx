@@ -4,7 +4,7 @@ cimport numpy as np
 from scipy.integrate import quad
 
 from gaussian cimport gaussianPdf, gaussianCdf
-from proximal cimport _cproxLq, _cproxLq_dt 
+from proximal cimport _cproxLq, _cproxLq_dt, _cproxLq_dx
 
 # mse_func
 cdef double _cmse_L1_singleton(double x, double alpha, double tau):
@@ -158,6 +158,60 @@ cdef double calpha_lb(double q, double delta, double tol):
         while U - L > tol:
             mid = (U + L) / 2.0
             if _cmse_Lq_dtau2_asymp(mid, q, tol) > delta:
+                L = mid
+            else:
+                U = mid
+        return (L + U) / 2.0
+
+cdef double _clambda_of_alpha_L1_helper_singleton(double x, double alpha, double tau):
+    return gaussianCdf(x / tau - alpha) + gaussianCdf(- x / tau - alpha)
+
+cdef double _clambda_of_alpha_L1(double M, double alpha, double tau, double epsilon, double delta):
+    return (1.0 - (_clambda_of_alpha_L1_helper_singleton(M, alpha, tau) * epsilon + _clambda_of_alpha_L1_helper_singleton(0, alpha, tau) * (1.0 - epsilon)) / delta) * alpha * tau
+
+cdef double _clambda_of_alpha_L2(double alpha, double delta):
+    return alpha * (1.0 - 1.0 / delta / (1.0 + 2 * alpha))
+
+cdef double _clambda_of_alpha_Lq_helper_integrand(double z, double x, double alpha, double tau, double q, double tol):
+    return _cproxLq_dx(x + z * tau, alpha * tau ** (2.0 - q), q, tol) * gaussianPdf(z)
+
+cdef double _clambda_of_alpha_Lq_helper_singleton(double x, double alpha, double tau, double q, double tol):
+    return quad(_clambda_of_alpha_Lq_helper_integrand, -np.inf, np.inf, args=(x, alpha, tau, q, tol))[0]
+
+cdef double _clambda_of_alpha_Lq(double M, double alpha, double tau, double epsilon, double delta, double q, double tol):
+    return _(1.0 - (_clambda_of_alpha_Lq_helper_singleton(M, alpha, tau, q, tol) * epsilon + _clambda_of_alpha_Lq_helper_singleton(0, alpha, tau, q, tol) * (1.0 - epsilon)) / delta) * alpha * tau ** (2.0 - q)
+
+cdef double clambda_of_alpha_Lq(double alpha, double M, double epsilon, double delta, double sigma, double q, double tol):
+    cdef double tau = ctau_of_alpha(alpha, M, q, epsilon, delta, sigma, tol)
+    if q == 1:
+        return _clambda_of_alpha_L1(M, alpha, tau, epsilon, delta)
+    elif q == 2:
+        return _clambda_of_alpha_L2(alpha, delta)
+    else:
+        return _clambda_of_alpha_Lq(M, alpha, tau, epsilon, delta, q, tol)
+
+cdef double calpha_of_lambda_Lq(double lam, double M, double epsilon, double delta, double sigma, double q, double tol):
+    cdef double L = 0
+    cdef double U = 0
+    cdef double mid = 0
+    cdef double incre = 0
+ 
+    if q == 2:
+        return 0.25 / delta + 0.5 * lam - 0.25 + sqrt((0.25 - 0.25 / delta - 0.5 * lam) ** 2 + 0.5 * lam)
+    else:
+        L = calpha_lb(q, delta, tol)
+        incre = 1.0 / delta
+        U = L + incre
+        mid = 0
+
+        while calpha_of_lambda_Lq(U, M, epsilon, delta, sigma, q, tol) < lam:
+            incre = incre * 2
+            U = U + incre
+        L = U - incre
+
+        while U - L > tol:
+            mid = (U + L) / 2.0
+            if calpha_of_lambda_Lq(mid, M, epsilon, delta, sigma, q, tol) < lam:
                 L = mid
             else:
                 U = mid

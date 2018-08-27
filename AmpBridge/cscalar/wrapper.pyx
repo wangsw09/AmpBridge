@@ -1,4 +1,4 @@
-from amp_mse cimport cmse_Lq, cmse_Lq_dalpha, ctau_of_alpha, coptimal_alpha
+from amp_mse cimport cmse_Lq, cmse_Lq_dalpha, ctau_of_alpha, coptimal_alpha, clambda_of_alpha_Lq, calpha_of_lambda_Lq
 from proximal cimport cproxLq, cproxLq_dx, cproxLq_dt, cproxLq_inv
 
 def mse_Lq(double alpha, double tau, double M, double epsilon, double q, double tol=1e-9):
@@ -12,6 +12,12 @@ def tau_of_alpha(double alpha, double M, double q, double epsilon, double delta,
 
 def optimal_alpha(double M, double q, double epsilon, double delta, double sigma, double tol=1e-9):
     return coptimal_alpha(M, q, epsilon, delta, sigma, tol)
+
+def lambda_of_alpha_Lq(double alpha, double M, double epsilon, double delta, double sigma, double q, double tol=1e-9):
+    return clambda_of_alpha_Lq(alpha, M, epsilon, delta, sigma, q, tol)
+
+def alpha_of_lambda_Lq(double lam, double M, double epsilon, double delta, double sigma, double q, double tol=1e-9):
+    return calpha_of_lambda_Lq(lam, M, epsilon, delta, sigma, q, tol)
 
 def proxLq(double x, double t, double q, double tol=1e-8):
     return cproxLq(x, t, q, tol)
