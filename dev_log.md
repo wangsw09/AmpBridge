@@ -12,6 +12,7 @@ Some components which can be further improved in the cscalar part include:
 
 The next steps involve the following three main stages:
 1. Write c optimized code for the Lq regression part;
+   * Wrote one version with coordinate descent;
 2. Merge the preivous optimized Amp c code into the current package;
 3. Merge the new Lq regression part of c code into the current package.
 
