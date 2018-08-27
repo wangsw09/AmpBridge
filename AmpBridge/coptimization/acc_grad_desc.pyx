@@ -68,3 +68,33 @@ def cbridge_Lq(
 
     return _cbridge_Lq(XTX, XTy, X_norm2, np.zeros(p, dtype=np.float64), lam, q, abs_tol, iter_max)
 
+
+@cython.boundscheck(False)
+@cython.wraparound(False)
+def cvbridge_Lq(
+        np.ndarray[dtype=np.float64_t, ndim=2] X, # XTX[i, j] = <Xi, Xj> / <Xi, Xi>
+        np.ndarray[dtype=np.float64_t, ndim=1] y, # XTy[i] = <Xi, y> / <Xi, Xi>
+        np.ndarray[dtype=np.float64_t, ndim=1] lams, double q, double abs_tol, int iter_max):
+    """
+    lams must be in the increasing order.
+    """
+    cdef int n = X.shape[0]
+    cdef int p = X.shape[1]
+    cdef int k = lams.shape[0]
+    cdef int i = 0
+
+    cdef np.ndarray[dtype=np.float64_t, ndim=1] X_norm2 = np.linalg.norm(X, ord=2, axis=0) ** 2
+    cdef np.ndarray[dtype=np.float64_t, ndim=2] XTX = np.dot(X.T, X) / X_norm2
+    cdef np.ndarray[dtype=np.float64_t, ndim=1] XTy = np.dot(X.T, y) / X_norm2
+    cdef np.ndarray[dtype=np.float64_t, ndim=2] Beta = np.zeros((p, k), dtype=np.float64)
+
+    Beta[:, k-1] =  _cbridge_Lq(XTX, XTy, X_norm2, np.zeros(p, dtype=np.float64), lams[k-1], q, abs_tol, iter_max)
+    for i in range(k - 2, -1, -1):
+        Beta[:, i] = _cbridge_Lq(XTX, XTy, X_norm2, Beta[:, i+1], lams[i], q, abs_tol, iter_max)
+    
+    return Beta
+
+
+
+
+
