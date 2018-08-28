@@ -24,6 +24,9 @@ The structure of the package:
 AmpBridge/
   __init__.py
   linear_model.py       penalized linear reg, optimal tuning, mse, variable selection methods
+  amp_se.py             amp-state-evolution related quantities, optimal-tuning, etc.
+  mse_expand.py         plan to include expansion of optimal mse in diff scenarios.
+  two-stage.py          plan to include two-stage VS related.
   lib/                  supposed to be replaced by cscalar. to be removed.
     __init__.py
     base_class.py       contains discrete distribution class, not useful for now
@@ -41,7 +44,7 @@ AmpBridge/
     clib.pyx            old cython module; contains bridge optimizer -- copied before removal
   coptimization/        plan to implement optimization algo for bridge regression
     __init__.py
-    acc_grad_desc.pyx   plan to implement accelerated gradient descent
+    acc_grad_desc.pyx   implement coordinate descent
   AMPtheory/
     __init__.py
     AMPbasic.py         class containing amp mse fns; re-think a better way to wrap it;
