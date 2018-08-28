@@ -1,3 +1,12 @@
+8/27/2018
+To do:
+1. Finish the two-stage part
+2. Test mse-expand and two-stage
+3. Remove AMPtheory sub-module
+4. Copy the slope routine, then remove lib sub-modules;
+5. Put useful components in clib.pyx into other files, remove clib.pyx
+6. Re-check the linear_model.py, I don't like the current interface.
+
 8/26/2018
 Switch back to work on this AmpBridge project, I want to finish it as soon as possible. Maybe in a week.
 
@@ -25,7 +34,7 @@ AmpBridge/
   __init__.py
   linear_model.py       penalized linear reg, optimal tuning, mse, variable selection methods
   amp_se.py             amp-state-evolution related quantities, optimal-tuning, etc.
-  mse_expand.py         plan to include expansion of optimal mse in diff scenarios.
+  mse_expand.py         included expansion of optimal mse in diff scenarios.
   two-stage.py          plan to include two-stage VS related.
   lib/                  supposed to be replaced by cscalar. to be removed.
     __init__.py
