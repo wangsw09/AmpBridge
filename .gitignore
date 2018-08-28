@@ -1,6 +1,7 @@
 *.pyc
 *~
 .*~
+.*.swp
 *.[oa]
 *.ipynb
 stats_*
