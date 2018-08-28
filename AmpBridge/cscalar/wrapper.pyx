@@ -1,5 +1,6 @@
 from amp_mse cimport cmse_Lq, cmse_Lq_dalpha, ctau_of_alpha, coptimal_alpha, clambda_of_alpha_Lq, calpha_of_lambda_Lq
 from proximal cimport cproxLq, cproxLq_dx, cproxLq_dt, cproxLq_inv
+from gaussian cimport cgaussianMoment, cgaussianPdf, cgaussianCdf
 
 def mse_Lq(double alpha, double tau, double M, double epsilon, double q, double tol=1e-9):
     return cmse_Lq(alpha, tau, M, epsilon, q, tol)
@@ -30,4 +31,13 @@ def proxLq_dt(double x, double t, double q, double tol=1e-8):
 
 def proxLq_inv(double z, double t, double q):
     return cproxLq_inv(z, t, q)
+
+def gaussianMoment(double q):
+    return cgaussianMoment(q)
+
+def gaussianCdf(double x):
+    return cgaussianCdf(x)
+
+def gaussianPdf(double x):
+    return cgaussianPdf(x)
 

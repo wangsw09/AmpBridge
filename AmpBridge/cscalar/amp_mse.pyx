@@ -3,12 +3,12 @@ import numpy as np
 cimport numpy as np
 from scipy.integrate import quad
 
-from gaussian cimport gaussianPdf, gaussianCdf
+from gaussian cimport cgaussianPdf, cgaussianCdf
 from proximal cimport _cproxLq, _cproxLq_dt, _cproxLq_dx
 
 # mse_func
 cdef double _cmse_L1_singleton(double x, double alpha, double tau):
-    return ( tau ** 2 * (1.0 + alpha ** 2) - x ** 2 ) * (gaussianCdf(x / tau - alpha) + gaussianCdf( - x / tau - alpha)) - (tau * x + tau ** 2 * alpha) * gaussianPdf(alpha - x / tau) + (tau * x - tau ** 2 * alpha) * gaussianPdf(alpha + x / tau) + x ** 2
+    return ( tau ** 2 * (1.0 + alpha ** 2) - x ** 2 ) * (cgaussianCdf(x / tau - alpha) + cgaussianCdf( - x / tau - alpha)) - (tau * x + tau ** 2 * alpha) * cgaussianPdf(alpha - x / tau) + (tau * x - tau ** 2 * alpha) * cgaussianPdf(alpha + x / tau) + x ** 2
 
 cdef double _cmse_L1(double alpha, double tau, double M, double epsilon):
     return _cmse_L1_singleton(M, alpha, tau) * epsilon + _cmse_L1_singleton(0.0, alpha, tau) * (1.0 - epsilon)
@@ -20,7 +20,7 @@ cdef double _cmse_L2(double alpha, double tau, double M, double epsilon):
     return _cmse_L2_singleton(M, alpha, tau) * epsilon + _cmse_L2_singleton(0.0, alpha, tau) * (1.0 - epsilon)
 
 cdef double _cmse_Lq_integrand(double z, double x, double alpha, double tau, double q, double tol):
-    return (_cproxLq(x + tau * z, alpha * tau ** (2.0 - q), q, tol) - x) ** 2 * gaussianPdf(z)
+    return (_cproxLq(x + tau * z, alpha * tau ** (2.0 - q), q, tol) - x) ** 2 * cgaussianPdf(z)
 
 cdef double _cmse_Lq_singleton(double x, double alpha, double tau, double q, double tol):
     return quad(_cmse_Lq_integrand, -np.inf, np.inf, args=(x, alpha, tau, q, tol))[0]
@@ -38,7 +38,7 @@ cdef double cmse_Lq(double alpha, double tau, double M, double epsilon, double q
 
 # mse_derivative func
 cdef double _cmse_L1_dalpha_singleton(double x, double alpha, double tau):
-    return 2.0 * tau ** 2 * alpha * (gaussianCdf(x / tau - alpha) + gaussianCdf( - x / tau - alpha)) - 2.0 * tau ** 2 * (gaussianPdf(alpha - x / tau) + gaussianPdf(alpha + x / tau) )
+    return 2.0 * tau ** 2 * alpha * (cgaussianCdf(x / tau - alpha) + cgaussianCdf( - x / tau - alpha)) - 2.0 * tau ** 2 * (cgaussianPdf(alpha - x / tau) + cgaussianPdf(alpha + x / tau) )
 
 cdef double _cmse_L1_dalpha(double alpha, double tau, double M, double epsilon):
     return _cmse_L1_dalpha_singleton(M, alpha, tau) * epsilon + _cmse_L1_dalpha_singleton(0, alpha, tau) * (1.0 - epsilon)
@@ -50,7 +50,7 @@ cdef double _cmse_L2_dalpha(double alpha, double tau, double M, double epsilon):
     return _cmse_L2_dalpha_singleton(M, alpha, tau) * epsilon + _cmse_L2_dalpha_singleton(0, alpha, tau) * (1.0 - epsilon)
 
 cdef double _cmse_Lq_dalpha_integrand(double z, double x, double alpha, double tau, double q, double tol):
-    return 2.0 * tau * (_cproxLq(x + z * tau, alpha * tau ** (2.0 - q), q, tol) - x) * _cproxLq_dt(x / tau + z, alpha, q, tol) * gaussianPdf(z)
+    return 2.0 * tau * (_cproxLq(x + z * tau, alpha * tau ** (2.0 - q), q, tol) - x) * _cproxLq_dt(x / tau + z, alpha, q, tol) * cgaussianPdf(z)
 
 cdef double _cmse_Lq_dalpha_singleton(double x, double alpha, double tau, double q, double tol):
     return quad(_cmse_Lq_dalpha_integrand, -np.inf, np.inf, args=(x, alpha, tau, q, tol))[0]
@@ -111,10 +111,10 @@ cdef double coptimal_alpha(double M, double q, double epsilon, double delta, dou
 
 cdef double _cmse_Lq_dtau2_asymp_integrand(double z, double alpha, double q, double tol):
     cdef double eta_abs = _cproxLq(abs(z), alpha, q, tol)
-    return (abs(z) - (2.0 - q) * q * alpha * eta_abs ** (q - 1.0)) / (1.0 + alpha * q * (q - 1.0) * eta_abs ** (q - 2.0)) * eta_abs * gaussianPdf(z)
+    return (abs(z) - (2.0 - q) * q * alpha * eta_abs ** (q - 1.0)) / (1.0 + alpha * q * (q - 1.0) * eta_abs ** (q - 2.0)) * eta_abs * cgaussianPdf(z)
 
 cdef double _cmse_L1_dtau2_asymp(double alpha):
-    return 2 * ((1 + alpha ** 2) * gaussianCdf(- alpha) - alpha * gaussianPdf(alpha))
+    return 2 * ((1 + alpha ** 2) * cgaussianCdf(- alpha) - alpha * cgaussianPdf(alpha))
 
 cdef double _cmse_L2_dtau2_asymp(double alpha):
     return 1.0 / (1.0 + 2.0 * alpha) ** 2
@@ -164,7 +164,7 @@ cdef double calpha_lb(double q, double delta, double tol):
         return (L + U) / 2.0
 
 cdef double _clambda_of_alpha_L1_helper_singleton(double x, double alpha, double tau):
-    return gaussianCdf(x / tau - alpha) + gaussianCdf(- x / tau - alpha)
+    return cgaussianCdf(x / tau - alpha) + cgaussianCdf(- x / tau - alpha)
 
 cdef double _clambda_of_alpha_L1(double M, double alpha, double tau, double epsilon, double delta):
     return (1.0 - (_clambda_of_alpha_L1_helper_singleton(M, alpha, tau) * epsilon + _clambda_of_alpha_L1_helper_singleton(0, alpha, tau) * (1.0 - epsilon)) / delta) * alpha * tau
@@ -173,7 +173,7 @@ cdef double _clambda_of_alpha_L2(double alpha, double delta):
     return alpha * (1.0 - 1.0 / delta / (1.0 + 2 * alpha))
 
 cdef double _clambda_of_alpha_Lq_helper_integrand(double z, double x, double alpha, double tau, double q, double tol):
-    return _cproxLq_dx(x + z * tau, alpha * tau ** (2.0 - q), q, tol) * gaussianPdf(z)
+    return _cproxLq_dx(x + z * tau, alpha * tau ** (2.0 - q), q, tol) * cgaussianPdf(z)
 
 cdef double _clambda_of_alpha_Lq_helper_singleton(double x, double alpha, double tau, double q, double tol):
     return quad(_clambda_of_alpha_Lq_helper_integrand, -np.inf, np.inf, args=(x, alpha, tau, q, tol))[0]
