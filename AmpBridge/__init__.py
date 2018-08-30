@@ -1,7 +1,7 @@
 # from .lib import *
 # from .linear_model import *
 from . import cscalar
-from . import coptimization
+from .coptimization import bridge_Lq, vec_bridge_Lq
 from .gaussian_tuning import *
 from .amp_se import *
 from .mse_expand import *
