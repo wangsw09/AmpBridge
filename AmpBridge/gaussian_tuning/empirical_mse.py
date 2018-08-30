@@ -3,9 +3,6 @@ import numpy as np
 def empirical_mse(beta_hat, X, y, gamma, q, tol):
         """
         empirical mse from each iteration
-        u = beta + np.dot(X.T, z)
-        theta = gamma * tau_new, gamma is equivalent to alpha
-        tau_old = npla.norm(z) / np.sqrt(n)
         """
         n, p = beta_hat.shape
         delta = (1.0 * n) / p
