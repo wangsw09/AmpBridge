@@ -54,7 +54,7 @@ cdef np.ndarray[dtype=np.float64_t, ndim=1] _cbridge_Lq(
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-def cbridge_Lq(
+def bridge_Lq(
         np.ndarray[dtype=np.float64_t, ndim=2] X, # XTX[i, j] = <Xi, Xj> / <Xi, Xi>
         np.ndarray[dtype=np.float64_t, ndim=1] y, # XTy[i] = <Xi, y> / <Xi, Xi>
         double lam, double q, double abs_tol, int iter_max):
@@ -71,7 +71,7 @@ def cbridge_Lq(
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-def cvbridge_Lq(
+def vec_bridge_Lq(
         np.ndarray[dtype=np.float64_t, ndim=2] X, # XTX[i, j] = <Xi, Xj> / <Xi, Xi>
         np.ndarray[dtype=np.float64_t, ndim=1] y, # XTy[i] = <Xi, y> / <Xi, Xi>
         np.ndarray[dtype=np.float64_t, ndim=1] lams, double q, double abs_tol, int iter_max):
