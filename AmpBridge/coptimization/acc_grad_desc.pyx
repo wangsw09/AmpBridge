@@ -94,7 +94,3 @@ def cvbridge_Lq(
     
     return Beta
 
-
-
-
-
