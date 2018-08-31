@@ -4,7 +4,7 @@ Finished a everything in a first version. Also finished the Examples.ipynb. Some
 2. The result of empirical MSE seems not quite correct. Should double check whether there are some error in the coding, or it is purely the stability issues.
 3. Should add more test cases. Also should add a way to benchmark the time: check if there are any online tables;
 4. Optimize the bridge solver and the gaussian_tuning part with cython_blas
-5. Rewrite the README.md
+5. Rewrite the README.md [finished]
 
 The parameter order issues:
 1. amp_se related functions: [fixed]
