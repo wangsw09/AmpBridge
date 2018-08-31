@@ -6,3 +6,5 @@
 *.ipynb
 stats_*
 .cache/
+*.c
+*.so
