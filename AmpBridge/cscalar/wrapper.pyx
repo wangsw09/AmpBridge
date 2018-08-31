@@ -2,17 +2,17 @@ from amp_mse cimport cmse_Lq, cmse_Lq_dalpha, ctau_of_alpha, coptimal_alpha, cla
 from proximal cimport cproxLq, cproxLq_dx, cproxLq_dt, cproxLq_inv
 from gaussian cimport cgaussianMoment, cgaussianPdf, cgaussianCdf
 
-def mse_Lq(double alpha, double tau, double M, double epsilon, double q, double tol=1e-9):
-    return cmse_Lq(alpha, tau, M, epsilon, q, tol)
+def mse_Lq(double M, double alpha, double tau, double epsilon, double q, double tol=1e-9):
+    return cmse_Lq(M, alpha, tau, epsilon, q, tol)
 
-def mse_Lq_dalpha(double alpha, double tau, double M, double epsilon, double q, double tol=1e-9):
-    return cmse_Lq_dalpha(alpha, tau, M, epsilon, q, tol)
+def mse_Lq_dalpha(double alpha, double M, double tau, double epsilon, double q, double tol=1e-9):
+    return cmse_Lq_dalpha(alpha, M, tau, epsilon, q, tol)
 
-def tau_of_alpha(double alpha, double M, double q, double epsilon, double delta, double sigma, double tol=1e-9):
-    return ctau_of_alpha(alpha, M, q, epsilon, delta, sigma, tol)
+def tau_of_alpha(double alpha, double M, double epsilon, double delta, double sigma, double q, double tol=1e-9):
+    return ctau_of_alpha(alpha, M, epsilon, delta, sigma, q, tol)
 
-def optimal_alpha(double M, double q, double epsilon, double delta, double sigma, double tol=1e-9):
-    return coptimal_alpha(M, q, epsilon, delta, sigma, tol)
+def optimal_alpha(double M, double epsilon, double delta, double sigma, double q, double tol=1e-9):
+    return coptimal_alpha(M, epsilon, delta, sigma, q, tol)
 
 def lambda_of_alpha_Lq(double alpha, double M, double epsilon, double delta, double sigma, double q, double tol=1e-9):
     return clambda_of_alpha_Lq(alpha, M, epsilon, delta, sigma, q, tol)

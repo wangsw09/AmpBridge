@@ -10,13 +10,13 @@ from proximal cimport _cproxLq, _cproxLq_dt, _cproxLq_dx
 cdef double _cmse_L1_singleton(double x, double alpha, double tau):
     return ( tau ** 2 * (1.0 + alpha ** 2) - x ** 2 ) * (cgaussianCdf(x / tau - alpha) + cgaussianCdf( - x / tau - alpha)) - (tau * x + tau ** 2 * alpha) * cgaussianPdf(alpha - x / tau) + (tau * x - tau ** 2 * alpha) * cgaussianPdf(alpha + x / tau) + x ** 2
 
-cdef double _cmse_L1(double alpha, double tau, double M, double epsilon):
+cdef double _cmse_L1(double M, double alpha, double tau, double epsilon):
     return _cmse_L1_singleton(M, alpha, tau) * epsilon + _cmse_L1_singleton(0.0, alpha, tau) * (1.0 - epsilon)
 
 cdef double _cmse_L2_singleton(double x, double alpha, double tau):
     return (tau ** 2.0 + 4 * alpha ** 2.0 * x ** 2.0) / (1.0 + 2.0 * alpha) ** 2
 
-cdef double _cmse_L2(double alpha, double tau, double M, double epsilon):
+cdef double _cmse_L2(double M, double alpha, double tau, double epsilon):
     return _cmse_L2_singleton(M, alpha, tau) * epsilon + _cmse_L2_singleton(0.0, alpha, tau) * (1.0 - epsilon)
 
 cdef double _cmse_Lq_integrand(double z, double x, double alpha, double tau, double q, double tol):
@@ -25,28 +25,28 @@ cdef double _cmse_Lq_integrand(double z, double x, double alpha, double tau, dou
 cdef double _cmse_Lq_singleton(double x, double alpha, double tau, double q, double tol):
     return quad(_cmse_Lq_integrand, -np.inf, np.inf, args=(x, alpha, tau, q, tol))[0]
 
-cdef double _cmse_Lq(double alpha, double tau, double M, double epsilon, double q, double tol):
+cdef double _cmse_Lq(double M, double alpha, double tau, double epsilon, double q, double tol):
     return _cmse_Lq_singleton(M, alpha, tau, q, tol) * epsilon + _cmse_Lq_singleton(0, alpha, tau, q, tol) * (1.0 - epsilon)
 
-cdef double cmse_Lq(double alpha, double tau, double M, double epsilon, double q, double tol=1e-9):
+cdef double cmse_Lq(double M, double alpha, double tau, double epsilon, double q, double tol=1e-9):
     if q == 1:
-        return _cmse_L1(alpha, tau, M, epsilon)
+        return _cmse_L1(M, alpha, tau, epsilon)
     elif q == 2:
-        return _cmse_L2(alpha, tau, M, epsilon)
+        return _cmse_L2(M, alpha, tau, epsilon)
     else:
-        return _cmse_Lq(alpha, tau, M, epsilon, q, tol)
+        return _cmse_Lq(M, alpha, tau, epsilon, q, tol)
 
 # mse_derivative func
 cdef double _cmse_L1_dalpha_singleton(double x, double alpha, double tau):
     return 2.0 * tau ** 2 * alpha * (cgaussianCdf(x / tau - alpha) + cgaussianCdf( - x / tau - alpha)) - 2.0 * tau ** 2 * (cgaussianPdf(alpha - x / tau) + cgaussianPdf(alpha + x / tau) )
 
-cdef double _cmse_L1_dalpha(double alpha, double tau, double M, double epsilon):
+cdef double _cmse_L1_dalpha(double alpha, double M, double tau, double epsilon):
     return _cmse_L1_dalpha_singleton(M, alpha, tau) * epsilon + _cmse_L1_dalpha_singleton(0, alpha, tau) * (1.0 - epsilon)
 
 cdef double _cmse_L2_dalpha_singleton(double x, double alpha, double tau):
     return (alpha * x ** 2 - 0.5 * tau ** 2) / (alpha + 0.5) ** 3
 
-cdef double _cmse_L2_dalpha(double alpha, double tau, double M, double epsilon):
+cdef double _cmse_L2_dalpha(double alpha, double M, double tau, double epsilon):
     return _cmse_L2_dalpha_singleton(M, alpha, tau) * epsilon + _cmse_L2_dalpha_singleton(0, alpha, tau) * (1.0 - epsilon)
 
 cdef double _cmse_Lq_dalpha_integrand(double z, double x, double alpha, double tau, double q, double tol):
@@ -55,27 +55,27 @@ cdef double _cmse_Lq_dalpha_integrand(double z, double x, double alpha, double t
 cdef double _cmse_Lq_dalpha_singleton(double x, double alpha, double tau, double q, double tol):
     return quad(_cmse_Lq_dalpha_integrand, -np.inf, np.inf, args=(x, alpha, tau, q, tol))[0]
 
-cdef double _cmse_Lq_dalpha(double alpha, double tau, double M, double epsilon, double q, double tol):
+cdef double _cmse_Lq_dalpha(double alpha, double M, double tau, double epsilon, double q, double tol):
     return _cmse_Lq_dalpha_singleton(M, alpha, tau, q, tol) * epsilon + _cmse_Lq_dalpha_singleton(0, alpha, tau, q, tol) * (1.0 - epsilon)
 
-cdef double cmse_Lq_dalpha(double alpha, double tau, double M, double epsilon, double q, double tol=1e-9):
+cdef double cmse_Lq_dalpha(double alpha, double M, double tau, double epsilon, double q, double tol=1e-9):
     if q == 1:
-        return _cmse_L1_dalpha(alpha, tau, M, epsilon)
+        return _cmse_L1_dalpha(alpha, M, tau, epsilon)
     elif q == 2:
-        return _cmse_L2_dalpha(alpha, tau, M, epsilon)
+        return _cmse_L2_dalpha(alpha, M, tau, epsilon)
     else:
-        return _cmse_Lq_dalpha(alpha, tau, M, epsilon, q, tol)
+        return _cmse_Lq_dalpha(alpha, M, tau, epsilon, q, tol)
 
 
 # Solve for tau
-cdef double ctau_of_alpha(double alpha, double M, double q, double epsilon, double delta, double sigma, double tol=1e-9):
+cdef double ctau_of_alpha(double alpha, double M, double epsilon, double delta, double sigma, double q, double tol=1e-9):
     # assume sigma != 0
     cdef double L = sigma
     cdef double incre = sigma
     cdef int Lsign = 1
     cdef double U = L + incre
 
-    while (cmse_Lq(alpha, U, M, epsilon, q, tol) / delta + sigma ** 2 > U ** 2) == Lsign:
+    while (cmse_Lq(M, alpha, U, epsilon, q, tol) / delta + sigma ** 2 > U ** 2) == Lsign:
         incre = incre * 2
         U = U + incre
 
@@ -84,18 +84,18 @@ cdef double ctau_of_alpha(double alpha, double M, double q, double epsilon, doub
 
     while U - L > tol:
         mid = (U + L) / 2.0
-        if (cmse_Lq(alpha, mid, M, epsilon, q, tol) / delta + sigma ** 2 > mid ** 2) == Lsign:
+        if (cmse_Lq(M, alpha, mid, epsilon, q, tol) / delta + sigma ** 2 > mid ** 2) == Lsign:
             L = mid
         else:
             U = mid
     return (U + L) / 2.0
 
-cdef double coptimal_alpha(double M, double q, double epsilon, double delta, double sigma, double tol=1e-9):
-    cdef double L = calpha_lb(q, delta, tol)
+cdef double coptimal_alpha(double M, double epsilon, double delta, double sigma, double q, double tol=1e-9):
+    cdef double L = calpha_lb(delta, q, tol)
     cdef double incre = 1.0
     cdef double U = L + incre
 
-    while cmse_Lq_dalpha(U, ctau_of_alpha(U, M, q, epsilon, delta, sigma, tol), M, epsilon, q, tol) < 0:
+    while cmse_Lq_dalpha(U, M, ctau_of_alpha(U, M, epsilon, delta, sigma, q, tol), epsilon, q, tol) < 0:
         incre = incre * 2
         U = U + incre
     L = U - incre
@@ -103,7 +103,7 @@ cdef double coptimal_alpha(double M, double q, double epsilon, double delta, dou
     cdef double mid = 0
     while U - L > tol:
         mid = (U + L) / 2.0
-        if cmse_Lq_dalpha(mid, ctau_of_alpha(mid, M, q, epsilon, delta, sigma, tol), M, epsilon, q, tol) < 0:
+        if cmse_Lq_dalpha(mid, M, ctau_of_alpha(mid, M, epsilon, delta, sigma, q, tol), epsilon, q, tol) < 0:
             L = mid
         else:
             U = mid
@@ -122,7 +122,7 @@ cdef double _cmse_L2_dtau2_asymp(double alpha):
 cdef double _cmse_Lq_dtau2_asymp(double alpha, double q, double tol):
     return quad(_cmse_Lq_dtau2_asymp_integrand, -np.inf, np.inf, args=(alpha, q, tol))[0]
 
-cdef double calpha_lb(double q, double delta, double tol):
+cdef double calpha_lb(double delta, double q, double tol):
     cdef double L = 0
     cdef double U = 0
     cdef double mid = 0
@@ -182,7 +182,7 @@ cdef double _clambda_of_alpha_Lq(double M, double alpha, double tau, double epsi
     return (1.0 - (_clambda_of_alpha_Lq_helper_singleton(M, alpha, tau, q, tol) * epsilon + _clambda_of_alpha_Lq_helper_singleton(0, alpha, tau, q, tol) * (1.0 - epsilon)) / delta) * alpha * tau ** (2.0 - q)
 
 cdef double clambda_of_alpha_Lq(double alpha, double M, double epsilon, double delta, double sigma, double q, double tol):
-    cdef double tau = ctau_of_alpha(alpha, M, q, epsilon, delta, sigma, tol)
+    cdef double tau = ctau_of_alpha(alpha, M, epsilon, delta, sigma, q, tol)
     if q == 1:
         return _clambda_of_alpha_L1(M, alpha, tau, epsilon, delta)
     elif q == 2:
@@ -199,7 +199,7 @@ cdef double calpha_of_lambda_Lq(double lam, double M, double epsilon, double del
     if q == 2:
         return 0.25 / delta + 0.5 * lam - 0.25 + sqrt((0.25 - 0.25 / delta - 0.5 * lam) ** 2 + 0.5 * lam)
     else:
-        L = calpha_lb(q, delta, tol)
+        L = calpha_lb(delta, q, tol)
         incre = 1.0 / delta
         U = L + incre
         mid = 0
