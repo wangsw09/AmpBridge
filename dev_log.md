@@ -7,7 +7,7 @@ Finished a everything in a first version. Also finished the Examples.ipynb. Some
 5. Rewrite the README.md
 
 The parameter order issues:
-1. amp_se related functions: fixed
+1. amp_se related functions: [fixed]
    * z, x, M, alpha, tau, epsilon, delta, sigma, q, tol
    * follow this order, skip if not presented
    * if one of the parameter is the main parameter, move it to beginning
