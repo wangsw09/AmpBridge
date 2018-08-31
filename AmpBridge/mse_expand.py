@@ -1,5 +1,5 @@
 import numpy as np
-import scipy.integrate import quad
+from scipy.integrate import quad
 from .cscalar import gaussianMoment, gaussianPdf, gaussianCdf
 
 class MseExpansion(object):
