@@ -179,7 +179,7 @@ cdef double _clambda_of_alpha_Lq_helper_singleton(double x, double alpha, double
     return quad(_clambda_of_alpha_Lq_helper_integrand, -np.inf, np.inf, args=(x, alpha, tau, q, tol))[0]
 
 cdef double _clambda_of_alpha_Lq(double M, double alpha, double tau, double epsilon, double delta, double q, double tol):
-    return _(1.0 - (_clambda_of_alpha_Lq_helper_singleton(M, alpha, tau, q, tol) * epsilon + _clambda_of_alpha_Lq_helper_singleton(0, alpha, tau, q, tol) * (1.0 - epsilon)) / delta) * alpha * tau ** (2.0 - q)
+    return (1.0 - (_clambda_of_alpha_Lq_helper_singleton(M, alpha, tau, q, tol) * epsilon + _clambda_of_alpha_Lq_helper_singleton(0, alpha, tau, q, tol) * (1.0 - epsilon)) / delta) * alpha * tau ** (2.0 - q)
 
 cdef double clambda_of_alpha_Lq(double alpha, double M, double epsilon, double delta, double sigma, double q, double tol):
     cdef double tau = ctau_of_alpha(alpha, M, q, epsilon, delta, sigma, tol)
@@ -204,14 +204,14 @@ cdef double calpha_of_lambda_Lq(double lam, double M, double epsilon, double del
         U = L + incre
         mid = 0
 
-        while calpha_of_lambda_Lq(U, M, epsilon, delta, sigma, q, tol) < lam:
+        while clambda_of_alpha_Lq(U, M, epsilon, delta, sigma, q, tol) < lam:
             incre = incre * 2
             U = U + incre
         L = U - incre
 
         while U - L > tol:
             mid = (U + L) / 2.0
-            if calpha_of_lambda_Lq(mid, M, epsilon, delta, sigma, q, tol) < lam:
+            if clambda_of_alpha_Lq(mid, M, epsilon, delta, sigma, q, tol) < lam:
                 L = mid
             else:
                 U = mid
