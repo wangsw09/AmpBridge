@@ -1,3 +1,52 @@
+Updated package structure
+
+AmpBridge/
+  __init__.py
+  linear_model.py           penalized lm, optimal tune, mse, amp, variable selection.
+  amp_se.py                 amp-state-evolution related quantities, optimal-tuning, etc.
+  mse_expand.py             included expansion of optimal mse in diff scenarios.
+  two-stage.py              included afdp-atpp pair for 1 stage/2 stage/debaised/sis.
+  cscalar/                  cython for scalar function;
+    __init__.py
+    proximal.pxd
+    proximal.pyx            proximal function, derivatives for L_q, q >= 1
+    gaussian.pxd
+    gaussian.pyx            gaussian CDF, PDF, moments, expectation (not good to use)
+    amp_mse.pxd
+    amp_mse.pyx             mse, optimal tuning, etc for amp Lq
+    wrapper.pyx             interface for outside python to access proximal and amp_mse
+  coptimization/            plan to implement optimization algo for bridge regression
+    __init__.py
+    bridge_coord_desc.pyx   implement coordinate descent
+  gaussian_tuning/
+    __init__.py
+    empirical_mse.py        calc empirical MSE and empirical tuning-mapping [wired result]
+
+Timing
+
+| functions | regular cython |
+| --------- | ------- |
+| prox_L1   | 281 ns |
+| prox_L2   | 273 ns |
+| prox_L1.5 | 263 ns |
+| prox_L1.2 | 4.2 us |
+| prox_L1.8 | 4.1 us |
+| prox_L2.2 | 1.5 us |
+| prox_L3.0 | 733 ns |
+| mse_L1    |  |
+| mse_L2    |  |
+| mse_L1.5  |  |
+| mse_Lq    |  |
+| optm_a_L1 |  |
+| optm_a_L2 |  |
+| optm_a_Lq |  |
+| optm_mse  |  |
+| lam_of_a  |  |
+| a_of_lam  |  |
+| LASSO     |  |
+| Ridge     |  |
+| Birdge    |  |
+
 8/30/2018
 Finished a everything in a first version. Also finished the Examples.ipynb. Some issues remain:
 1. The parameter order seems terrible for some of the functions. Should make them consistent; [fixed]
