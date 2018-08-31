@@ -4,7 +4,7 @@ def empirical_mse(beta_hat, X, y, gamma, q, tol):
         """
         empirical mse from each iteration
         """
-        n, p = beta_hat.shape
+        n, p = X.shape
         delta = (1.0 * n) / p
         if q == 1:
             z =  (y - np.dot(X, beta_hat)) / (1.0 - 1 / delta * np.mean(beta_hat))
@@ -18,7 +18,9 @@ def empirical_mse(beta_hat, X, y, gamma, q, tol):
             return np.mean(XTz ** 2) - tau2 + 2 * tau2 * np.mean(1.0 / (1.0 +
                 gamma * q * (q - 1.0) * np.abs(beta_hat) ** (q - 2.0)))
 
-def tuning_mapping(lam, beta_hat, q, tol):
+def empirical_tuning_mapping(lam, beta_hat, delta, q, tol):
+    if q == 1:
+        return lam / (1.0 - 1.0 / delta * np.mean(beta_hat != 0))
     L = lam
     U = lam + 1.0 / delta / q / (q - 1.0) * np.mean(1.0 / np.abs(beta_hat) ** (q - 2.0))
 
