@@ -1,3 +1,53 @@
+8/30/2018
+Finished a everything in a first version. Also finished the Examples.ipynb. Some issues remain:
+1. The parameter order seems terrible for some of the functions. Should make them consistent;
+2. The result of empirical MSE seems not quite correct. Should double check whether there are some error in the coding, or it is purely the stability issues.
+3. Should all more test cases. Also should add a way to benchmark the time: check if there are any online tables;
+4. Optimize the bridge solver and the gaussian_tuning part with cython_blas
+
+The structure of the package:
+
+AmpBridge/
+  __init__.py
+  linear_model.py           penalized lm, optimal tune, mse, amp, variable selection.
+  amp_se.py                 amp-state-evolution related quantities, optimal-tuning, etc.
+  mse_expand.py             included expansion of optimal mse in diff scenarios.
+  two-stage.py              included afdp-atpp pair for 1 stage/2 stage/debaised/sis.
+  cscalar/                  cython for scalar function;
+    __init__.py
+    proximal.pxd
+    proximal.pyx            proximal function, derivatives for L_q, q >= 1
+    gaussian.pxd
+    gaussian.pyx            gaussian CDF, PDF, moments, expectation (not good to use)
+    amp_mse.pxd
+    amp_mse.pyx             mse, optimal tuning, etc for amp Lq
+    wrapper.pyx             interface for outside python to access proximal and amp_mse
+  coptimization/            plan to implement optimization algo for bridge regression
+    __init__.py
+    bridge_coord_desc.pyx   implement coordinate descent
+  gaussian_tuning/
+    __init__.py
+    empirical_mse.py        calc empirical MSE and empirical tuning-mapping [wired result]
+
+
+8/29/2018
+Working on the SURE risk estimate and tuning part for bridge estimator. Trying to link blas/lapack. It seems that instead of compiling by ourself, scipy provides an interface for calling all the blas/lapack functions. We can just cimport them there. But we may have a requirement on the version of scipy (>=0.16?)
+
+8/28/2018
+We may want to put AFDP-ATPP just as function, but not class. The reason is people may have the need to change some of the parameters and to obtain a sequence of AFDP-ATPP pair. Putting them into one class seems tricky.
+
+Finished the two-stage module.
+
+Working on the optimal tuning for gaussian design problem. I think I will remove the AMP algorithm for now. I may add them in later.
+
+To do:
+1. Test mse-expand and two-stage
+2. Copy the slope routine, then remove lib sub-modules;
+3. Put useful components in clib.pyx into other files, remove clib.pyx
+4. Re-check the linear_model.py, I don't like the current interface.
+5. Implement AMP
+
+
 8/27/2018
 To do:
 1. Finish the two-stage part
@@ -32,15 +82,15 @@ The structure of the package:
 
 AmpBridge/
   __init__.py
-  linear_model.py       penalized linear reg, optimal tuning, mse, variable selection methods
+  linear_model.py       penalized lm, optimal tune, mse, amp, variable selection.
   amp_se.py             amp-state-evolution related quantities, optimal-tuning, etc.
   mse_expand.py         included expansion of optimal mse in diff scenarios.
-  two-stage.py          plan to include two-stage VS related.
-  lib/                  supposed to be replaced by cscalar. to be removed.
+  two-stage.py          included afdp-atpp pair for 1 stage/2 stage/debaised/sis.
+  lib/                  [removed] supposed to be replaced by cscalar. to be removed.
     __init__.py
-    base_class.py       contains discrete distribution class, not useful for now
-    prox_func.py        except for lq, also contains SLOPE; should copy SLOPE before abandon;
-    tools.py            bisect_search, multi-test, normalize
+    base_class.py       [removed] contains discrete distribution class
+    prox_func.py        [removed] except for lq, also contains SLOPE
+    tools.py            [removed] bisect_search, multi-test, normalize
   cscalar/              cython for scalar function;
     __init__.py
     proximal.pxd
@@ -49,13 +99,13 @@ AmpBridge/
     gaussian.pyx        gaussian CDF, PDF, moments, expectation (not good to use)
     amp_mse.pxd
     amp_mse.pyx         mse, optimal tuning, etc for amp Lq
-    wrapper.pyx         provide interface for outside python to access proximal and amp_mse
-    clib.pyx            old cython module; contains bridge optimizer -- copied before removal
+    wrapper.pyx         interface for outside python to access proximal and amp_mse
+    clib.pyx            [removed] old cython module; contains bridge optimizer
   coptimization/        plan to implement optimization algo for bridge regression
     __init__.py
-    acc_grad_desc.pyx   implement coordinate descent
-  AMPtheory/
-    __init__.py
-    AMPbasic.py         class containing amp mse fns; re-think a better way to wrap it;
-    mseAnalysis.py      expansion of optimal mse in diff scenes. re-think whether need this..
+    bridge_coord_desc.pyx   implement coordinate descent
+  AMPtheory/            [removed]
+    __init__.py         [removed]
+    AMPbasic.py         [removed] class for amp mse fns;
+    mseAnalysis.py      [removed] expansion of optimal mse in diff scenes.
 
