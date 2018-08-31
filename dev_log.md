@@ -1,5 +1,6 @@
 Updated package structure
 
+```text
 AmpBridge/
   __init__.py
   linear_model.py           penalized lm, optimal tune, mse, amp, variable selection.
@@ -21,6 +22,7 @@ AmpBridge/
   gaussian_tuning/
     __init__.py
     empirical_mse.py        calc empirical MSE and empirical tuning-mapping [wired result]
+```
 
 Timing
 
