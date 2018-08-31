@@ -1,8 +1,8 @@
 8/30/2018
 Finished a everything in a first version. Also finished the Examples.ipynb. Some issues remain:
-1. The parameter order seems terrible for some of the functions. Should make them consistent;
+1. The parameter order seems terrible for some of the functions. Should make them consistent; [fixed]
 2. The result of empirical MSE seems not quite correct. Should double check whether there are some error in the coding, or it is purely the stability issues.
-3. Should all more test cases. Also should add a way to benchmark the time: check if there are any online tables;
+3. Should add more test cases. Also should add a way to benchmark the time: check if there are any online tables;
 4. Optimize the bridge solver and the gaussian_tuning part with cython_blas
 5. Rewrite the README.md
 
