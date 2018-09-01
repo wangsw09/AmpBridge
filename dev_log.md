@@ -63,16 +63,16 @@ Timing
 | a_lam_L1.8  | 4.5  s |
 | a_lam_L2.2  | 2.4  s |
 | a_lam_L3.0  | 923 ms |
-| Bridge L1   (n=10000, p=2000)   | 3.1 s |
-| Bridge L2   (n=10000, p=2000)   | 3.1 s |
-| Bridge L1.5 (n=10000, p=2000)   | 3.2 s |
-| Bridge L1.2 (n=10000, p=2000)   | 3.4 s |
-| Bridge L1.8 (n=10000, p=2000)   | 3.6 s |
-| Bridge L2.2 (n=10000, p=2000)   | 3.0 s |
-| Bridge L3.0 (n=10000, p=2000)   | 3.3 s |
-| Bridge L1   (n=2000, p=10000)   | 6.4 m |
-| Bridge L2   (n=2000, p=10000)   | 12  m |
-| Bridge L1.5 (n=2000, p=10000)   | 12  m |
+| Bridge L1   (n=10K, p=2K)   | 3.1 s |
+| Bridge L2   (n=10K, p=2K)   | 3.1 s |
+| Bridge L1.5 (n=10K, p=2K)   | 3.2 s |
+| Bridge L1.2 (n=10K, p=2K)   | 3.4 s |
+| Bridge L1.8 (n=10K, p=2K)   | 3.6 s |
+| Bridge L2.2 (n=10K, p=2K)   | 3.0 s |
+| Bridge L3.0 (n=10K, p=2K)   | 3.3 s |
+| Bridge L1   (n=2K, p=10K)   | 6.4 m |
+| Bridge L2   (n=2K, p=10K)   | 12  m |
+| Bridge L1.5 (n=2K, p=10K)   | 12  m |
 
 
 8/30/2018
