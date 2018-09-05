@@ -14,11 +14,16 @@ ext_modules_coptimization = [
             sources=["AmpBridge/coptimization/bridge_coord_desc.pyx"])
         ]
 
+ext_modules_cblas = [
+        Extension("AmpBridge.clinalg.cython_blas_wrapper",
+            sources=["AmpBridge/clinalg/cython_blas_wrapper.pyx"])
+        ]
+
 
 setup(
         name = "cAccelerate",
         cmdclass = {"build_ext" : build_ext},
-        ext_modules = ext_modules_cscalar + ext_modules_coptimization,
+        ext_modules = ext_modules_cscalar + ext_modules_coptimization + ext_modules_cblas,
         script_args=["build_ext"],
         options={"build_ext" : {"inplace" : True, "force" : True}},
         )
