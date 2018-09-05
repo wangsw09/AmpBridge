@@ -3,7 +3,7 @@ Approximate message passing (AMP), state-evolution analysis, bridge regression,
 Stein's unbiased risk estimator (SURE) of bridge regression.
 
 Approximate message passing is an algorithm which has tractable and analyzable
-performance under specific design (Gaussian typically). On the other hand, it connects to a big class of statistical machine learning models, making it possible to analyze the statistical properties of these models, including MSE, variable selection, etc.
+performance under specific design (Gaussian typically). On the other hand, it connects to a class of statistical machine learning models, making it possible to analyze the statistical properties of these models, including MSE, variable selection, etc.
 
 This package provides functionalities about the following topics:
 * Theoretical quantities about AMP state-evolutions, such as MSE, optimal tuning,
@@ -14,8 +14,9 @@ This package provides functionalities about the following topics:
   design.
 
 `Cython` is used to accelerate the core, upon which the whole package is then built.
-Regarding the calculations involving matrix operations, `blas` is used to boost the
-performance (through calling `scipy.linalg.cython_blas`).
+
+`blas` functions are called directly whenever possible to boost the
+calculations involving vectors and matrices (through interface `scipy.linalg.cython_blas`).
 
 The work is motivated by my research with Haolei Weng and Professor Arian Maleki at Columbia University. The relevant paper is "[Which bridge estimator is optimal for variable selection?](http://arxiv.org/abs/1705.08617)". 
 
