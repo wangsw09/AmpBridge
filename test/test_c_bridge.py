@@ -7,7 +7,7 @@ from sklearn.linear_model import Lasso, Ridge
 
 from AmpBridge import bridge_Lq, vec_bridge_Lq
 
-TOL = 1e-7
+TOL = 1e-6
 
 def test_bridge_L1():
     tol = 1e-12
@@ -24,7 +24,7 @@ def test_bridge_L1():
     beta_hat = bridge_Lq(X, y, lam, 1, abs_tol=tol, iter_max=50000)
     assert np.abs(beta_hat - beta_skl).max() < TOL
     
-    tol = 1e-12
+    tol = 1e-10
     n = 500
     p = 700
     X = npr.normal(size=(n, p))
@@ -32,10 +32,10 @@ def test_bridge_L1():
     y = np.dot(X, beta) + 0.5 * npr.normal(size=n)
     lam = 1.0
 
-    las = Lasso(alpha=lam / n, fit_intercept=False, tol=tol, max_iter=50000)
+    las = Lasso(alpha=lam / n, fit_intercept=False, tol=tol, max_iter=100000)
     las.fit(X, y)
     beta_skl = las.coef_
-    beta_hat = bridge_Lq(X, y, lam, 1, abs_tol=tol, iter_max=50000)
+    beta_hat = bridge_Lq(X, y, lam, 1, abs_tol=tol, iter_max=100000)
     assert np.abs(beta_hat - beta_skl).max() < TOL
 
 def test_bridge_L2():
