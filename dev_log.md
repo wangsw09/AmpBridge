@@ -26,53 +26,53 @@ AmpBridge/
 
 Timing
 
-| functions   | regular cython |
-| ---------   | ------- |
-| prox_L1     | 281 ns |
-| prox_L2     | 273 ns |
-| prox_L1.5   | 263 ns |
-| prox_L1.2   | 4.2 us |
-| prox_L1.8   | 4.1 us |
-| prox_L2.2   | 1.5 us |
-| prox_L3.0   | 733 ns |
-| mse_L1      | 954 ns |
-| mse_L2      | 292 ns |
-| mse_L1.5    | 3.6 ms |
-| mse_L1.2    | 3.2 ms |
-| mse_L1.8    | 3.8 ms |
-| mse_L2.2    | 1.5 ms |
-| mse_L3.0    | 562 us |
-| optm_a_L1   | 723 us |
-| optm_a_L2   | 61  us |
-| optm_a_L1.5 | 4.0  s |
-| optm_a_L1.2 | 3.7  s |
-| optm_a_L1.8 | 5.0  s |
-| optm_a_L2.2 | 2.0  s |
-| optm_a_L3.0 | 688 ms |
-| lam_a_L1    | 22  us |
-| lam_a_L2    | 2.0 us |
-| lam_a_L1.5  | 119 ms |
-| lam_a_L1.2  | 107 ms |
-| lam_a_L1.8  | 154 ms |
-| lam_a_L2.2  | 68  ms |
-| lam_a_L3.0  | 22  ms |
-| a_lam_L1    | 933 us |
-| a_lam_L2    | 683 ns |
-| a_lam_L1.5  | 3.5  s |
-| a_lam_L1.2  | 3.6  s |
-| a_lam_L1.8  | 4.5  s |
-| a_lam_L2.2  | 2.4  s |
-| a_lam_L3.0  | 923 ms |
-| Bridge L1   (n=10K, p=2K)   | 3.1 s |
-| Bridge L2   (n=10K, p=2K)   | 3.1 s |
-| Bridge L1.5 (n=10K, p=2K)   | 3.2 s |
-| Bridge L1.2 (n=10K, p=2K)   | 3.4 s |
-| Bridge L1.8 (n=10K, p=2K)   | 3.6 s |
-| Bridge L2.2 (n=10K, p=2K)   | 3.0 s |
-| Bridge L3.0 (n=10K, p=2K)   | 3.3 s |
-| Bridge L1   (n=2K, p=10K)   | 6.4 m |
-| Bridge L2   (n=2K, p=10K)   | 12  m |
-| Bridge L1.5 (n=2K, p=10K)   | 12  m |
+| functions   | regular cython | blas optimize |
+| ---------   | ------- | ------ |
+| prox_L1     | 281 ns | |
+| prox_L2     | 273 ns | |
+| prox_L1.5   | 263 ns | |
+| prox_L1.2   | 4.2 us | |
+| prox_L1.8   | 4.1 us | |
+| prox_L2.2   | 1.5 us | |
+| prox_L3.0   | 733 ns | |
+| mse_L1      | 954 ns | |
+| mse_L2      | 292 ns | |
+| mse_L1.5    | 3.6 ms | |
+| mse_L1.2    | 3.2 ms | |
+| mse_L1.8    | 3.8 ms | |
+| mse_L2.2    | 1.5 ms | |
+| mse_L3.0    | 562 us | |
+| optm_a_L1   | 723 us | |
+| optm_a_L2   | 61  us | |
+| optm_a_L1.5 | 4.0  s | |
+| optm_a_L1.2 | 3.7  s | |
+| optm_a_L1.8 | 5.0  s | |
+| optm_a_L2.2 | 2.0  s | |
+| optm_a_L3.0 | 688 ms | |
+| lam_a_L1    | 22  us | |
+| lam_a_L2    | 2.0 us | |
+| lam_a_L1.5  | 119 ms | |
+| lam_a_L1.2  | 107 ms | |
+| lam_a_L1.8  | 154 ms | |
+| lam_a_L2.2  | 68  ms | |
+| lam_a_L3.0  | 22  ms | |
+| a_lam_L1    | 933 us | |
+| a_lam_L2    | 683 ns | |
+| a_lam_L1.5  | 3.5  s | |
+| a_lam_L1.2  | 3.6  s | |
+| a_lam_L1.8  | 4.5  s | |
+| a_lam_L2.2  | 2.4  s | |
+| a_lam_L3.0  | 923 ms | |
+| Bridge L1   (n=10K, p=2K)   | 3.1 s | 1.4 s |
+| Bridge L2   (n=10K, p=2K)   | 3.1 s | 1.5 s |
+| Bridge L1.5 (n=10K, p=2K)   | 3.2 s | 1.6 s |
+| Bridge L1.2 (n=10K, p=2K)   | 3.4 s | 1.6 s |
+| Bridge L1.8 (n=10K, p=2K)   | 3.6 s | 1.6 s |
+| Bridge L2.2 (n=10K, p=2K)   | 3.0 s | 1.4 s |
+| Bridge L3.0 (n=10K, p=2K)   | 3.3 s | 1.4 s |
+| Bridge L1   (n=2K, p=10K)   | 6.4 m | 2.9 m |
+| Bridge L2   (n=2K, p=10K)   | 12  m | 5.5 m |
+| Bridge L1.5 (n=2K, p=10K)   | 12  m | 5.6 m |
 
 
 8/30/2018
