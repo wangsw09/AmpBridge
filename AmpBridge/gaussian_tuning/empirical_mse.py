@@ -2,21 +2,17 @@ import numpy as np
 
 def empirical_mse(beta_hat, X, y, gamma, q, tol):
         """
-        empirical mse from each iteration
+        empirical "mse" tau square of the optimizer
         """
         n, p = X.shape
         delta = (1.0 * n) / p
         if q == 1:
-            z =  (y - np.dot(X, beta_hat)) / (1.0 - 1 / delta * np.mean(beta_hat))
+            z =  (y - np.dot(X, beta_hat)) / (1.0 - 1 / delta * np.mean(beta_hat != 0))
         else:
             z =  (y - np.dot(X, beta_hat)) / (1.0 - 1.0 / delta * np.mean(np.abs(beta_hat) ** (q - 2.0)))
-        XTz = np.dot(X.T, z)
         tau2 = np.mean(z ** 2)
-        if q == 1:
-            return np.mean(XTz ** 2) - tau2 + 2 * tau2 * np.mean(beta_hat != 0)
-        else:
-            return np.mean(XTz ** 2) - tau2 + 2 * tau2 * np.mean(1.0 / (1.0 +
-                gamma * q * (q - 1.0) * np.abs(beta_hat) ** (q - 2.0)))
+    return tau2
+
 
 def empirical_tuning_mapping(lam, beta_hat, delta, q, tol):
     if q == 1:
