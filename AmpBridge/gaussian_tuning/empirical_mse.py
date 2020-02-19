@@ -1,4 +1,6 @@
+from math import sqrt
 import numpy as np
+
 
 def empirical_mse(beta_hat, X, y, lam, q, tol):
         """
@@ -20,11 +22,11 @@ def empirical_tau2(beta_hat, X, y, lam, q, tol):
         n, p = X.shape
         delta = (1.0 * n) / p
         if q == 1:
-            z =  (y - np.dot(X, beta_hat)) / (1.0 - 1 / delta * np.mean(beta_hat))
+            z =  (y - np.dot(X, beta_hat)) / (1.0 - 1 / delta * np.mean(np.abs(beta_hat) > 1e-7))
         else:
             z =  (y - np.dot(X, beta_hat)) / (1.0 - 1.0 / delta * np.mean(np.abs(beta_hat) ** (q - 2.0)))
-        XTz = np.dot(X.T, z)
-        tau2 = np.mean(z ** 2)
+        # XTz = np.dot(X.T, z)
+        tau2 = np.mean(z ** 2) / n
         return tau2
 
 
