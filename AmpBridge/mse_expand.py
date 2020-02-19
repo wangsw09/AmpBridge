@@ -1,6 +1,6 @@
 import numpy as np
 from scipy.integrate import quad
-from .cscalar import gaussianMoment, gaussianPdf, gaussianCdf
+from .cscalar.wrapper import gaussianMoment, gaussianPdf, gaussianCdf
 
 class MseExpansion(object):
     def __init__(self):

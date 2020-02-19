@@ -1,4 +1,4 @@
-from .cscalar import mse_Lq, tau_of_alpha, optimal_alpha, alpha_of_lambda_Lq, lambda_of_alpha_Lq
+from .cscalar.wrapper import mse_Lq, tau_of_alpha, optimal_alpha, alpha_of_lambda_Lq, lambda_of_alpha_Lq
 
 def mseLq(M, alpha, epsilon, delta, sigma, q, tol=1e-9):
     tau = tau_of_alpha(alpha, M, epsilon, delta, sigma, q, tol=tol)

@@ -1,6 +1,7 @@
 from distutils.core import setup
 from distutils.extension import Extension
 from Cython.Distutils import build_ext
+import numpy
 
 ext_modules_cscalar = [
         Extension("AmpBridge.cscalar.gaussian", sources=["AmpBridge/cscalar/gaussian.pyx"], libraries=["m"]),
@@ -26,5 +27,6 @@ setup(
         ext_modules = ext_modules_cscalar + ext_modules_coptimization + ext_modules_cblas,
         script_args=["build_ext"],
         options={"build_ext" : {"inplace" : True, "force" : True}},
+        include_dirs=[numpy.get_include()]
         )
 

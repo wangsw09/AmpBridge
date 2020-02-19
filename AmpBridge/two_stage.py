@@ -1,5 +1,5 @@
 from math import sqrt
-from .cscalar import gaussianMoment, gaussianPdf, gaussianCdf, proxLq_inv, tau_of_alpha, optimal_alpha
+from .cscalar.wrapper import gaussianMoment, gaussianPdf, gaussianCdf, proxLq_inv, tau_of_alpha, optimal_alpha
 
 def _vl_(alpha, epsilon):
     '''
