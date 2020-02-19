@@ -1,11 +1,17 @@
-def grid_search(lam_seq, X, y, q):
+import numpy as np
+from .empirical_mse import empirical_tau2
+from ..coptimization import vec_bridge_Lq
+
+
+def grid_search(lam_vec, X, y, q, abs_tol, iter_max):
     """
-    lam_seq has to be in descending order
+    lam_seq in ascending order
     """
-    k = lam_seq.shape[0]
-    Beta_hat = Bridge(lam_seq, X, y, q)
-    tau_seq = np.empty(k)
+    k = lam_vec.shape[0]
+    Beta_hat = vec_bridge_Lq(X, y, lam_vec, q, abs_tol, iter_max)
+    tau2_vec = np.empty(k)
     for i in range(k):
-        tau_seq[i] = tau(Beta_hat[:, i], X, y, q)
-    return lam_seq[np.argmin(tau_seq)et filetype indent on
+        tau2_vec[i] = empirical_tau2(Beta_hat[:, i], X, y, lam_vec[i])
+    min_idx = np.argmin(tau2_vec)
+    return lam_vec[min_idx], Beta_hat[:, min_idx]
 
