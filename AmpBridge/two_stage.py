@@ -14,10 +14,10 @@ def _tl_(alpha, tau, M, epsilon):
     return epsilon * (gaussianCdf(M / tau - alpha) + gaussianCdf(- M / tau - alpha))
 
 def afdp_atpp_lasso(alpha, M, epsilon, delta, sigma, tol=1e-9):
-    tau = tau_of_alpha(alpha, M, q, epsilon, delta, sigma, tol=tol)
+    tau = tau_of_alpha(alpha, M, epsilon, delta, sigma, 1, tol=tol)
     vl = _vl_(alpha, epsilon)
     tl = _tl_(alpha, tau, M, epsilon)
-    return (vl / (vl + tl), tl / epsilon)
+    return (vl / (vl + tl), tl / epsilon) if tl > 1e-12 else (0.0, 0.0)
 
 def _vq_(alpha, tau, epsilon, s, q):
     '''
@@ -38,11 +38,11 @@ def _tq_(alpha, tau, M, epsilon, s, q):
         return epsilon * (gaussianCdf(M / tau - proxLq_inv(s / tau, alpha, q)) + gaussianCdf(- M / tau - proxLq_inv(s / tau, alpha, q)))
 
 def afdp_atpp_2stage(M, epsilon, delta, sigma, s, q, tol=1e-9):
-    alpha = optimal_alpha(M, q, epsilon, delta, sigma, tol=tol)
-    tau = tau_of_alpha(alpha, M, q, epsilon, delta, sigma, tol=tol)
+    alpha = optimal_alpha(M, epsilon, delta, sigma, q, tol=tol)
+    tau = tau_of_alpha(alpha, M, epsilon, delta, sigma, q, tol=tol)
     vq = _vq_(alpha, tau, epsilon, s, q)
     tq = _tq_(alpha, tau, M, epsilon, s, q)
-    return (vq / (vq + tq), tq / epsilon)
+    return (vq / (vq + tq), tq / epsilon) if tq > 1e-12 else (0.0, 0.0)
 
 def _vd_(s, tau, epsilon):
     '''
@@ -57,15 +57,15 @@ def _td_(s, tau, M, epsilon):
     return epsilon * (gaussianCdf((M - s) / tau) + gaussianCdf((- s - M) / tau))
 
 def afdp_atpp_db(M, epsilon, delta, sigma, s, q, tol=1e-9):
-    alpha = optimal_alpha(M, q, epsilon, delta, sigma, tol=tol)
-    tau = tau_of_alpha(alpha, M, q, epsilon, delta, sigma, tol=tol)
+    alpha = optimal_alpha(M, epsilon, delta, sigma, q, tol=tol)
+    tau = tau_of_alpha(alpha, M, epsilon, delta, sigma, q, tol=tol)
     vd = _vd_(s, tau, epsilon)
     td = _td_(s, tau, M, epsilon)
-    return (vd / (vd + td), td / epsilon)
+    return (vd / (vd + td), td / epsilon) if td > 1e-12 else (0.0, 0.0)
 
 def afdp_atpp_sis(M, epsilon, delta, sigma, s):
     tau0 = sqrt(sigma ** 2 + M ** 2 / delta)
     vs = _vd_(s, tau0, epsilon)
     ts = _td_(s, tau0, M, epsilon)
-    return (vs / (vs + ts), ts / epsilon)
+    return (vs / (vs + ts), ts / epsilon) if ts > 1e-12 else (0.0, 0.0)
 
