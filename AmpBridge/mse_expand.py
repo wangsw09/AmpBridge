@@ -35,7 +35,7 @@ class MseExpansion(object):
 
     def large_sample2(self, M, epsilon, delta, sigma, q):
         if q < 2:
-            return (sigma ** 2 / delta) ** q * (1 - epsilon) ** 2 / epsilon * gaussianMoment(q) ** 2 / M ** (2 * q - 2)
+            return - (sigma ** 2 / delta) ** q * (1 - epsilon) ** 2 / epsilon * gaussianMoment(q) ** 2 / M ** (2 * q - 2)
         elif q == 2:
             return sigma ** 2 / delta ** 2 * (1.0 - sigma ** 2 / epsilon / M ** 2)
         else:
@@ -50,5 +50,6 @@ class MseExpansion(object):
                 L = mid
             else:
                 U = mid
-        return (U + L) / 2.0
+        mid = (U + L) / 2.0  # mid is the value of the minimizer
+        return (1.0 - epsilon) * (2.0 * (1.0 + mid ** 2) * gaussianCdf(-mid) - 2.0 * mid * gaussianPdf(mid)) + epsilon * (1.0 + mid ** 2)
 
