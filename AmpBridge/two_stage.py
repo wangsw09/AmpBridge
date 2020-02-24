@@ -64,7 +64,7 @@ def afdp_atpp_db(M, epsilon, delta, sigma, s, q, tol=1e-9):
     return (vd / (vd + td), td / epsilon) if td > 1e-12 else (0.0, 0.0)
 
 def afdp_atpp_sis(M, epsilon, delta, sigma, s):
-    tau0 = sqrt(sigma ** 2 + M ** 2 / delta)
+    tau0 = sqrt(sigma ** 2 + epsilon * M ** 2 / delta)
     vs = _vd_(s, tau0, epsilon)
     ts = _td_(s, tau0, M, epsilon)
     return (vs / (vs + ts), ts / epsilon) if ts > 1e-12 else (0.0, 0.0)
