@@ -24,7 +24,8 @@ def empirical_tau2(beta_hat, X, y, lam, q, tol):
         if q == 1:
             z =  (y - np.dot(X, beta_hat)) / (1.0 - 1 / delta * np.mean(np.abs(beta_hat) > 1e-7))
         else:
-            z =  (y - np.dot(X, beta_hat)) / (1.0 - 1.0 / delta * np.mean(np.abs(beta_hat) ** (q - 2.0)))
+            gamma = empirical_tuning_mapping(lam, beta_hat, delta, q, tol)
+            z =  (y - np.dot(X, beta_hat)) / (1.0 - 1.0 / delta * np.mean(1.0 / (1.0 + gamma * q * (q - 1.0) * np.abs(beta_hat) ** (q - 2.0))))
         # XTz = np.dot(X.T, z)
         tau2 = np.mean(z ** 2) / n
         return tau2
